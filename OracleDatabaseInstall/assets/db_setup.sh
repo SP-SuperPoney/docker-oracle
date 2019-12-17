@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ignore secure linux
-setenforce Permissive
+#setenforce Permissive
 
 # create oracle groups
 groupadd --gid 54321 oinstall

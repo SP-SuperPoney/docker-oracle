@@ -4,7 +4,7 @@ LABEL maintainer="eric.clement@juxta.fr"
 LABEL fork_from="philipp.salvisberg@gmail.com"
 LABEL description="Oracle Database 11.2.0.4 database"
 LABEL build.command="docker build . --tag oracle/11.2.0.4:db"
-LABEL run.command="docker run -v oracle:/u02 -it -p 1158:1158 -p 8081:8081 -p 1521:1521 -h odb --name oracle oracle/11.2.0.4:db"
+LABEL run.command="docker run -v oracle:/u02 -it -p 1158:1158 -p 8081:8081 -p 1521:1521 -h oracle --name oracle oracle/11.2.0.4:db"
 
 # environment variables (defaults for DBCA and entrypoint.sh)
 ENV DBCONTROL=true \

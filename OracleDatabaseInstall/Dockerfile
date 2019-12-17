@@ -2,13 +2,12 @@
 FROM oraclelinux:7-slim
 
 LABEL maintainer="eric.clement@juxta.fr"
-LABEL fork.from="philipp.salvisberg@gmail.com"
 LABEL description="Oracle Database 11.2.0.4 database only"
 LABEL build.command="docker build . --tag oracle/11.2.0.4:base"
 
 # set download location for Oracle software which are not available for unattended downloads
-#ENV ORACLE_ASSETS=http://jxt-dev-pgsql.juxta.fr/oracle-assets
-ENV ORACLE_ASSETS=http://192.168.2.188/oracle-assets
+ENV ORACLE_ASSETS=http://jxt-dev-pgsql.juxta.fr/oracle-assets
+#ENV ORACLE_ASSETS=http://192.168.2.188/oracle-assets
 
 # copy all scripts
 ADD assets /assets/
