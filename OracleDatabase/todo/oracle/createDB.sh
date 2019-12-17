@@ -54,23 +54,6 @@ DIAG_ADR_ENABLED = off
 " > $ORACLE_HOME/network/admin/listener.ora
 
 # Start LISTENER and run DBCA
-
-	gosu oracle bash -c "${ORACLE_HOME}/bin/dbca \
-		-silent \
-		-createDatabase \
-		-templateName General_Purpose.dbc \
-		-gdbname ${SERVICE_NAME} \
-		-sid ${ORACLE_SID} \
-		-responseFile NO_VALUE \
-		-characterSet AL32UTF8 \
-		-totalMemory $DBCA_TOTAL_MEMORY \
-		-emConfiguration ${EM_CONFIGURATION} \
-		-dbsnmpPassword ${PASS} \
-		-sysmanPassword ${PASS} \
-		-sysPassword ${PASS} \
-		-systemPassword ${PASS} \
-		-initparams java_jit_enabled=FALSE"
-
 lsnrctl start &&
 dbca -silent -createDatabase -responseFile $ORACLE_BASE/dbca.rsp -emConfiguration LOCAL ||
  cat /opt/oracle/cfgtoollogs/dbca/$ORACLE_SID/$ORACLE_SID.log ||

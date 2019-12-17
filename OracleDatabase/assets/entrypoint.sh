@@ -16,8 +16,8 @@ reuse_database(){
 	chown oracle:dba /etc/oratab
 	chmod 664 /etc/oratab
 	provide_data_as_single_volume
-	gosu oracle bash -c "${ORACLE_HOME}/bin/lsnrctl start"
-	gosu oracle bash -c 'echo startup\; | ${ORACLE_HOME}/bin/sqlplus -s -l / as sysdba'
+	su oracle bash -c "${ORACLE_HOME}/bin/lsnrctl start"
+	su oracle bash -c 'echo startup\; | ${ORACLE_HOME}/bin/sqlplus -s -l / as sysdba'
 }
 
 link_dir_to_volume(){
@@ -76,7 +76,7 @@ provide_data_as_single_volume(){
 set_timezone(){
 	echo "Change timezone to Central European Time (CET)."
 	unlink /etc/localtime
-	ln -s /usr/share/zoneinfo/Europe/Zurich /etc/localtime
+	ln -s /usr/share/zoneinfo/Europe/Brussels /etc/localtime
 }
 
 remove_domain_from_resolve_conf(){
@@ -90,13 +90,13 @@ create_database(){
 	echo "Creating database."
 	provide_data_as_single_volume
 	remove_domain_from_resolve_conf
-	gosu oracle bash -c "${ORACLE_HOME}/bin/lsnrctl start"
+	su oracle bash -c "${ORACLE_HOME}/bin/lsnrctl start"
 	if [ $DBCONTROL == "true" ]; then
 		EM_CONFIGURATION=LOCAL
 	else
 		EM_CONFIGURATION=NONE
 	fi
-	gosu oracle bash -c "${ORACLE_HOME}/bin/dbca \
+	su oracle bash -c "${ORACLE_HOME}/bin/dbca \
 		-silent \
 		-createDatabase \
 		-templateName General_Purpose.dbc \
@@ -111,41 +111,26 @@ create_database(){
 		-sysPassword ${PASS} \
 		-systemPassword ${PASS} \
 		-initparams java_jit_enabled=FALSE,audit_trail=NONE,audit_sys_operations=FALSE"
+
+
+	#lsnrctl start &&
+	#dbca -silent -createDatabase -responseFile $ORACLE_BASE/dbca.rsp -emConfiguration LOCAL ||
+	# cat /opt/oracle/cfgtoollogs/dbca/$ORACLE_SID/$ORACLE_SID.log ||
+	# cat /opt/oracle/cfgtoollogs/dbca/$ORACLE_SID.log
+
 	echo "Configure listener."
-	gosu oracle bash -c 'echo -e "ALTER SYSTEM SET LOCAL_LISTENER='"'"'(ADDRESS = (PROTOCOL = TCP)(HOST = $(hostname))(PORT = 1521))'"'"' SCOPE=BOTH;\n ALTER SYSTEM REGISTER;\n EXIT" | ${ORACLE_HOME}/bin/sqlplus -s -l / as sysdba'
+	su oracle bash -c 'echo -e "ALTER SYSTEM SET LOCAL_LISTENER='"'"'(ADDRESS = (PROTOCOL = TCP)(HOST = $(hostname))(PORT = 1521))'"'"' SCOPE=BOTH;\n ALTER SYSTEM REGISTER;\n EXIT" | ${ORACLE_HOME}/bin/sqlplus -s -l / as sysdba'
+
+	#echo "Remove second control file"
+	#su oracle bash -c 'echo -e "ALTER SYSTEM SET control_files='"'"'$ORACLE_BASE/oradata/${ORACLE_SID}/control01.ctl'"'"' scope=spfile;\n EXIT" | ${ORACLE_HOME}/bin/sqlplus -s -l / as sysdba'	
+
 	echo "Applying data patches."
-	gosu oracle bash -c 'echo -e "@?/rdbms/admin/catbundle.sql PSU APPLY\n EXIT" | ${ORACLE_HOME}/bin/sqlplus -s -l / as sysdba'
-	echo "Remove old APEX installation"
-	gosu oracle bash -c 'cd ${ORACLE_HOME}/apex.old; echo EXIT | /opt/sqlcl/bin/sql -s -l / as sysdba @apxremov.sql'
+	su oracle bash -c 'echo -e "@?/rdbms/admin/catbundle.sql PSU APPLY\n EXIT" | ${ORACLE_HOME}/bin/sqlplus -s -l / as sysdba'
 	echo "Setting TWO_TASK environment for default connection."
 	export CONNECT_STRING=${ORACLE_SID}
 	echo "export CONNECT_STRING=${CONNECT_STRING}" >> /.oracle_env
 	echo "export CONNECT_STRING=${CONNECT_STRING}" >> /home/oracle/.bash_profile
 	echo "export CONNECT_STRING=${CONNECT_STRING}" >> /root/.bashrc
-	if [ $APEX == "true" ]; then
-		. /assets/install_apex.sh
-	fi
-	if [ $APEX == "true" -a $ORDS == "false" ]; then
-		echo "Enabable XDB HTTP port for EPG."
-		gosu oracle bash -c 'echo EXEC DBMS_XDB.sethttpport\(8080\)\; | ${ORACLE_HOME}/bin/sqlplus -s -l / as sysdba'
-	fi
-	if [ $ORDS == "true" ]; then
-		echo "Installing ORDS."
-		gosu oracle bash -c "/assets/install_ords.sh"
-	fi
-	echo "Installing schema SCOTT."
-	# setting TWO_TASK causes connections using O/S authentication to fail, e.g. "sqlplus / as sysdba".
-	export TWO_TASK=${CONNECT_STRING}
-	${ORACLE_HOME}/bin/sqlplus sys/${PASS}@${TWO_TASK} as sysdba @${ORACLE_HOME}/rdbms/admin/utlsampl.sql
-	unset TWO_TASK
-	echo "Installing Oracle sample schemas."
-	. /assets/install_oracle_sample_schemas.sh
-	echo "Installing FTLDB."
-	. /assets/install_ftldb.sh
-	echo "Installing tePLSQL."
-	. /assets/install_teplsql.sh
-	echo "Installing oddgen examples/tutorials"
-	. /assets/install_oddgen.sh
 	echo "Save configuration to volume"
 	save_to_volume
 }
@@ -161,20 +146,17 @@ start_database(){
 
 	# (re)start EM Database Console
 	if [ $DBCONTROL == "true" ]; then
-		gosu oracle bash -c "emctl stop dbconsole" || true
-		gosu oracle bash -c "kill `ps -ef | grep emagent | awk '{print $2}'`" || true
-		gosu oracle bash -c "emctl start dbconsole"
+		su oracle bash -c "emctl stop dbconsole" || true
+		su oracle bash -c "kill `ps -ef | grep emagent | awk '{print $2}'`" || true
+		su oracle bash -c "emctl start dbconsole"
 	fi
-
-	# start ORDS
-	gosu oracle bash -c "/assets/start_ords.sh"
 
 	# Successful installation/startup
 	echo ""
 	echo "Database ready to use. Enjoy! ;-)"
 
 	# trap interrupt/terminate signal for graceful termination
-	trap "gosu oracle bash -c 'echo Starting graceful shutdown... && echo shutdown immediate\; | ${ORACLE_HOME}/bin/sqlplus -S / as sysdba && /assets/stop_ords.sh && ${ORACLE_HOME}/bin/lsnrctl stop'" INT TERM
+	trap "su oracle bash -c 'echo Starting graceful shutdown... && echo shutdown immediate\; | ${ORACLE_HOME}/bin/sqlplus -S / as sysdba && /assets/stop_ords.sh && ${ORACLE_HOME}/bin/lsnrctl stop'" INT TERM
 
 	# waiting for termination of tns listener
 	PID=`ps -e | grep tnslsnr | awk '{print $1}'`

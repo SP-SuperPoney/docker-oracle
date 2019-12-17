@@ -2,22 +2,56 @@
 
 # ignore secure linux
 #setenforce Permissive
+set -e
 
-# create oracle groups
-groupadd --gid 54321 oinstall
-groupadd --gid 54322 dba
-groupadd --gid 54323 oper
+source /assets/colorecho
+trap "echo_red '******* ERROR: Something went wrong.'; exit 1" SIGTERM
+trap "echo_red '******* Caught SIGINT signal. Stopping...'; exit 2" SIGINT
 
-# create oracle user
-useradd --create-home --gid oinstall --groups oinstall,dba --uid 54321 oracle
+#Install prerequisites directly without virtual package
+deps () {
 
-# install required OS components
-yum install -y oracle-rdbms-server-11gR2-preinstall \
+	echo "Installing dependencies"
+	#yum -y install binutils compat-libstdc++-33 compat-libstdc++-33.i686 ksh elfutils-libelf elfutils-libelf-devel glibc glibc-common glibc-devel gcc gcc-c++ libaio libaio.i686 libaio-devel libaio-devel.i686 libgcc libstdc++ libstdc++.i686 libstdc++-devel libstdc++-devel.i686 make sysstat unixODBC unixODBC-devel
+    yum install -y oracle-rdbms-server-11gR2-preinstall \
                perl \
                tar \
                unzip \
                wget
+	yum clean all
+	rm -rf /var/lib/{cache,log} /var/log/lastlog
 
+}
+
+users () {
+
+	echo "Configuring users"
+    # create oracle groups
+    groupadd --gid 54321 oinstall
+    groupadd --gid 54322 dba
+    groupadd --gid 54323 oper
+
+    # create oracle user
+    useradd --create-home --gid oinstall --groups oinstall,dba --uid 54321 oracle
+
+	# echo "oracle:install" | chpasswd
+	# echo "root:install" | chpasswd
+	sed -i "s/pam_namespace.so/pam_namespace.so\nsession    required     pam_limits.so/g" /etc/pam.d/login
+
+}
+
+sysctl_and_limits () {
+
+	cp /assets/sysctl.conf /etc/sysctl.conf
+	cat /assets/limits.conf >> /etc/security/limits.conf
+
+}
+
+users
+deps
+sysctl_and_limits
+
+##################
 # download and extract JDK (required by sqlcl)
 echo "downloading JDK..."
 wget -q --no-check-certificate ${ORACLE_ASSETS}/jdk-8u231-linux-x64.rpm -O /tmp/jdk.rpm
@@ -50,11 +84,6 @@ mkdir -p /tmp/oracle
 chown -R oracle:oinstall /u01
 chown -R oracle:oinstall /tmp/oracle
 
-# install gosu as workaround for su problems (see http://grokbase.com/t/gg/docker-user/162h4pekwa/docker-su-oracle-su-cannot-open-session-permission-denied)
-#wget -q --no-check-certificate "https://github.com/tianon/gosu/releases/download/1.10/gosu-amd64"  -O /usr/local/bin/gosu
-wget -q --no-check-certificate "${ORACLE_ASSETS}/gosu-amd64"  -O /usr/local/bin/gosu
-chmod +x /usr/local/bin/gosu
-
 # download and extract Oracle database software
 echo "downloading Oracle database software..."
 wget -q --no-check-certificate ${ORACLE_ASSETS}/p13390677_112040_Linux-x86-64_1of7.zip -O /tmp/oracle/db1.zip
@@ -62,15 +91,15 @@ wget -q --no-check-certificate ${ORACLE_ASSETS}/p13390677_112040_Linux-x86-64_2o
 chown oracle:oinstall /tmp/oracle/db1.zip
 chown oracle:oinstall /tmp/oracle/db2.zip
 echo "extracting Oracle database software..."
-gosu oracle bash -c "unzip -o /tmp/oracle/db1.zip -d /tmp/oracle/" > /dev/null
-gosu oracle bash -c "unzip -o /tmp/oracle/db2.zip -d /tmp/oracle/" > /dev/null
+su oracle bash -c "unzip -o /tmp/oracle/db1.zip -d /tmp/oracle/" > /dev/null
+su oracle bash -c "unzip -o /tmp/oracle/db2.zip -d /tmp/oracle/" > /dev/null
 rm -f /tmp/oracle/db1.zip
 rm -f /tmp/oracle/db2.zip
 
 # install Oracle software into ${ORACLE_BASE}
 chown oracle:oinstall /assets/db_install.rsp
 echo "running Oracle installer to install database software only..."
-gosu oracle bash -c "/tmp/oracle/database/runInstaller -silent -force -waitforcompletion -responsefile /assets/db_install.rsp -ignoresysprereqs -ignoreprereq"
+su oracle bash -c "/tmp/oracle/database/runInstaller -silent -force -waitforcompletion -responsefile /assets/db_install.rsp -ignoresysprereqs -ignoreprereq"
 
 # run Oracle root scripts
 echo "running Oracle root scripts..."
@@ -85,15 +114,15 @@ echo "downloading OPatch..."
 wget -q --no-check-certificate ${ORACLE_ASSETS}/p6880880_112000_Linux-x86-64.zip -O /tmp/oracle/p6880880.zip
 chown oracle:oinstall /tmp/oracle/p6880880.zip
 echo "extracting and installing OPatch..."
-gosu oracle bash -c "unzip -o /tmp/oracle/p6880880.zip -d ${ORACLE_HOME}/" > /dev/null
+su oracle bash -c "unzip -o /tmp/oracle/p6880880.zip -d ${ORACLE_HOME}/" > /dev/null
 rm -f /tmp/oracle/p6880880.zip
 
 # # download and install patch p28729262
 # wget -q --no-check-certificate ${ORACLE_ASSETS}/p28729262_112040_Linux-x86-64.zip -O /tmp/oracle/patch.zip
 # chown oracle:oinstall /tmp/oracle/patch.zip
 # echo "extracting and installing Oracle Database Release Update 11.2.0.4.190115..."
-# gosu oracle bash -c "unzip -o /tmp/oracle/patch.zip -d /tmp/oracle/" > /dev/null
-# gosu oracle bash -c "cd /tmp/oracle/28729262 && opatch apply -force -silent -ocmrf /assets/ocm.rsp"
+# su oracle bash -c "unzip -o /tmp/oracle/patch.zip -d /tmp/oracle/" > /dev/null
+# su oracle bash -c "cd /tmp/oracle/28729262 && opatch apply -force -silent -ocmrf /assets/ocm.rsp"
 # rm -f /tmp/oracle/patch.zip
 
 #download and extract SQL Developer CLI as workaround for SQL*Plus issues with "SET TERMOUT OFF/ON"

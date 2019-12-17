@@ -36,9 +36,9 @@ Environment variable | Default value | Comments
 -------------------- | ------------- | --------
 DBCONTROL | ```true``` | Set to ```false``` if you do not want to use Enterprise Manger Database Control.
 DBCA\_TOTAL\_MEMORY | ```2048```| Memory in kilobytes for the Database Creation Assistent.
-GDBNAME | ```odb.docker``` | Global database name, used by DBCA
-ORACLE_SID | ```odb```| Oracle System Identifier
-SERVICE_NAME | ```odb.docker``` | Oracle Service Name (for the container database)
+GDBNAME | ```oracle.docker``` | Global database name, used by DBCA
+ORACLE_SID | ```oracle```| Oracle System Identifier
+SERVICE_NAME | ```oracle.docker``` | Oracle Service Name (for the container database)
 PASS | ```oracle```| Password for SYS, SYSTEM
 
 Here's an example run call amending the PASS environment variable skip DBCONTROL installation:
