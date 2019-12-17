@@ -1,7 +1,8 @@
-FROM oraclelinux:7.6
+#FROM oraclelinux:7.6
+FROM oraclelinux:7-slim
 
 LABEL maintainer="eric.clement@juxta.fr"
-LABEL fork_from="philipp.salvisberg@gmail.com"
+LABEL fork.from="philipp.salvisberg@gmail.com"
 LABEL description="Oracle Database 11.2.0.4 database only"
 LABEL build.command="docker build . --tag oracle/11.2.0.4:base"
 
