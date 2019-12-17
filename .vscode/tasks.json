@@ -1,0 +1,31 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build docker base image",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/OracleDatabaseSoftware/11.2"
+            },
+            "command": "pwd && docker build . --tag oracle/11.2.0.4:base",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build docker database image",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/OracleDatabase/11.2"
+            },
+            "command": "pwd && docker run -v oracle:/u02 -it -p 1158:1158 -p 8081:8081 -p 1521:1521 -h odb --name oracle oracle/11.2.0.4:db",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

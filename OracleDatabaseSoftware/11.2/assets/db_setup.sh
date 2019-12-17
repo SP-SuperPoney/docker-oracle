@@ -18,12 +18,9 @@ yum install -y oracle-rdbms-server-11gR2-preinstall \
                unzip \
                wget
 
-# set download location for Oracle software which are not available for unattended downloads
-ORACLE_ASSETS=https://www.salvis.com/oracle-assets
-
 # download and extract JDK (required by sqlcl)
 echo "downloading JDK..."
-wget -q --no-check-certificate ${ORACLE_ASSETS}/jdk-8u144-linux-x64.rpm -O /tmp/jdk.rpm
+wget -q --no-check-certificate ${ORACLE_ASSETS}/jdk-8u231-linux-x64.rpm -O /tmp/jdk.rpm
 echo "installing JDK..."
 rpm -i /tmp/jdk.rpm
 rm /tmp/jdk.rpm
@@ -54,7 +51,8 @@ chown -R oracle:oinstall /u01
 chown -R oracle:oinstall /tmp/oracle
 
 # install gosu as workaround for su problems (see http://grokbase.com/t/gg/docker-user/162h4pekwa/docker-su-oracle-su-cannot-open-session-permission-denied)
-wget -q --no-check-certificate "https://github.com/tianon/gosu/releases/download/1.10/gosu-amd64"  -O /usr/local/bin/gosu
+#wget -q --no-check-certificate "https://github.com/tianon/gosu/releases/download/1.10/gosu-amd64"  -O /usr/local/bin/gosu
+wget -q --no-check-certificate "${ORACLE_ASSETS}/gosu-amd64"  -O /usr/local/bin/gosu
 chmod +x /usr/local/bin/gosu
 
 # download and extract Oracle database software
@@ -90,63 +88,62 @@ echo "extracting and installing OPatch..."
 gosu oracle bash -c "unzip -o /tmp/oracle/p6880880.zip -d ${ORACLE_HOME}/" > /dev/null
 rm -f /tmp/oracle/p6880880.zip
 
-# download and install patch p28729262
-wget -q --no-check-certificate ${ORACLE_ASSETS}/p28729262_112040_Linux-x86-64.zip -O /tmp/oracle/patch.zip
-chown oracle:oinstall /tmp/oracle/patch.zip
-echo "extracting and installing Oracle Database Release Update 11.2.0.4.190115..."
-gosu oracle bash -c "unzip -o /tmp/oracle/patch.zip -d /tmp/oracle/" > /dev/null
-gosu oracle bash -c "cd /tmp/oracle/28729262 && opatch apply -force -silent -ocmrf /assets/ocm.rsp"
-rm -f /tmp/oracle/patch.zip
+# # download and install patch p28729262
+# wget -q --no-check-certificate ${ORACLE_ASSETS}/p28729262_112040_Linux-x86-64.zip -O /tmp/oracle/patch.zip
+# chown oracle:oinstall /tmp/oracle/patch.zip
+# echo "extracting and installing Oracle Database Release Update 11.2.0.4.190115..."
+# gosu oracle bash -c "unzip -o /tmp/oracle/patch.zip -d /tmp/oracle/" > /dev/null
+# gosu oracle bash -c "cd /tmp/oracle/28729262 && opatch apply -force -silent -ocmrf /assets/ocm.rsp"
+# rm -f /tmp/oracle/patch.zip
 
-# download and extract SQL Developer CLI as workaround for SQL*Plus issues with "SET TERMOUT OFF/ON"
+#download and extract SQL Developer CLI as workaround for SQL*Plus issues with "SET TERMOUT OFF/ON"
 echo "downloading SQL Developer CLI..."
-wget -q --no-check-certificate ${ORACLE_ASSETS}/sqlcl-4.2.0.16.355.0402-no-jre.zip -O /tmp/sqlcl.zip
+wget -q --no-check-certificate ${ORACLE_ASSETS}/sqlcl-19.2.1.206.1649.zip -O /tmp/sqlcl.zip
 echo "extracting SQL Developer CLI..."
 unzip /tmp/sqlcl.zip -d /opt > /dev/null
 chown -R oracle:oinstall /opt/sqlcl
 rm -f /tmp/sqlcl.zip
 
-# remove original sample schemas to save disk space
-rm -r -f ${ORACLE_HOME}/demo/schema
+# # remove original sample schemas to save disk space
+# rm -r -f ${ORACLE_HOME}/demo/schema
+# # download and extract Oracle sample schemas
+# echo "downloading Oracle sample schemas..."
+# wget -q --no-check-certificate https://github.com/oracle/db-sample-schemas/archive/master.zip -O /tmp/db-sample-schemas-master.zip
+# echo "extracting Oracle sample schemas..."
+# unzip /tmp/db-sample-schemas-master.zip -d ${ORACLE_HOME}/demo/ > /dev/null
+# mv ${ORACLE_HOME}/demo/db-sample-schemas-master ${ORACLE_HOME}/demo/schema
+# # ensure ORACLE_HOME does not contain soft links to avoid "ORA-22288: file or LOB operation FILEOPEN failed"  (for Oracle sample schemas)
+# ORACLE_HOME=`readlink -f ${ORACLE_HOME}`
+# cd ${ORACLE_HOME}/demo/schema
+# # replace placeholders in files, do not keep original version
+# perl -p -i -e 's#__SUB__CWD__#'$(pwd)'#g' *.sql */*.sql */*.dat > /dev/null
+# # reset environment (ORACLE_HOME)
+# . /.oracle_env
+# chown oracle:oinstall ${ORACLE_HOME}/demo/schema
+# rm -f /tmp/db-sample-schemas-master.zip
 
-# download and extract Oracle sample schemas
-echo "downloading Oracle sample schemas..."
-wget -q --no-check-certificate https://github.com/oracle/db-sample-schemas/archive/master.zip -O /tmp/db-sample-schemas-master.zip
-echo "extracting Oracle sample schemas..."
-unzip /tmp/db-sample-schemas-master.zip -d ${ORACLE_HOME}/demo/ > /dev/null
-mv ${ORACLE_HOME}/demo/db-sample-schemas-master ${ORACLE_HOME}/demo/schema
-# ensure ORACLE_HOME does not contain soft links to avoid "ORA-22288: file or LOB operation FILEOPEN failed"  (for Oracle sample schemas)
-ORACLE_HOME=`readlink -f ${ORACLE_HOME}`
-cd ${ORACLE_HOME}/demo/schema
-# replace placeholders in files, do not keep original version
-perl -p -i -e 's#__SUB__CWD__#'$(pwd)'#g' *.sql */*.sql */*.dat > /dev/null
-# reset environment (ORACLE_HOME)
-. /.oracle_env
-chown oracle:oinstall ${ORACLE_HOME}/demo/schema
-rm -f /tmp/db-sample-schemas-master.zip
+# # rename original APEX folder (required for deinstallation of APEX)
+# mv ${ORACLE_HOME}/apex ${ORACLE_HOME}/apex.old
 
-# rename original APEX folder (required for deinstallation of APEX)
-mv ${ORACLE_HOME}/apex ${ORACLE_HOME}/apex.old
+# # download and extract APEX software
+# echo "downloading APEX..."
+# wget -q --no-check-certificate ${ORACLE_ASSETS}/apex_18.2_en.zip -O /tmp/apex.zip
+# echo "extracting APEX..."
+# unzip -o /tmp/apex.zip -d ${ORACLE_HOME} > /dev/null
+# chown -R oracle:oinstall ${ORACLE_HOME}/apex
+# rm -f /tmp/apex.zip
 
-# download and extract APEX software
-echo "downloading APEX..."
-wget -q --no-check-certificate ${ORACLE_ASSETS}/apex_18.2_en.zip -O /tmp/apex.zip
-echo "extracting APEX..."
-unzip -o /tmp/apex.zip -d ${ORACLE_HOME} > /dev/null
-chown -R oracle:oinstall ${ORACLE_HOME}/apex
-rm -f /tmp/apex.zip
+# # remove original ORDS folder to save disk space
+# rm -r -f ${ORACLE_HOME}/ords
 
-# remove original ORDS folder to save disk space
-rm -r -f ${ORACLE_HOME}/ords
-
-# download and extract ORDS
-echo "downloading ORDS..."
-wget -q --no-check-certificate ${ORACLE_ASSETS}/ords-18.4.0.354.1002.zip -O /tmp/ords.zip
-echo "extracting ORDS..."
-mkdir /opt/ords
-unzip /tmp/ords.zip -d ${ORACLE_HOME}/ords/ > /dev/null
-chown -R oracle:oinstall ${ORACLE_HOME}/ords
-rm -f /tmp/ords.zip
+# # download and extract ORDS
+# echo "downloading ORDS..."
+# wget -q --no-check-certificate ${ORACLE_ASSETS}/ords-18.4.0.354.1002.zip -O /tmp/ords.zip
+# echo "extracting ORDS..."
+# mkdir /opt/ords
+# unzip /tmp/ords.zip -d ${ORACLE_HOME}/ords/ > /dev/null
+# chown -R oracle:oinstall ${ORACLE_HOME}/ords
+# rm -f /tmp/ords.zip
 
 # cleanup
 rm -r -f /tmp/*

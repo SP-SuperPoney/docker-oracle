@@ -28,3 +28,4 @@ Environment variable | Value
 -------------------- | -------------
 ORACLE_BASE | ```/u01/app/oracle```
 ORACLE_HOME | ```/u01/app/oracle/product/11.2.0/dbhome```
+ORACLE_ASSETS | ```http://192.168.2.188/oracle-assets```

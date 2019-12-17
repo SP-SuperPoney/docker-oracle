@@ -110,7 +110,7 @@ create_database(){
 		-sysmanPassword ${PASS} \
 		-sysPassword ${PASS} \
 		-systemPassword ${PASS} \
-		-initparams java_jit_enabled=FALSE"
+		-initparams java_jit_enabled=FALSE,audit_trail=NONE,audit_sys_operations=FALSE"
 	echo "Configure listener."
 	gosu oracle bash -c 'echo -e "ALTER SYSTEM SET LOCAL_LISTENER='"'"'(ADDRESS = (PROTOCOL = TCP)(HOST = $(hostname))(PORT = 1521))'"'"' SCOPE=BOTH;\n ALTER SYSTEM REGISTER;\n EXIT" | ${ORACLE_HOME}/bin/sqlplus -s -l / as sysdba'
 	echo "Applying data patches."
