@@ -40,6 +40,8 @@ GDBNAME | ```oracle.docker``` | Global database name, used by DBCA
 ORACLE_SID | ```oracle```| Oracle System Identifier
 SERVICE_NAME | ```oracle.docker``` | Oracle Service Name (for the container database)
 PASS | ```oracle```| Password for SYS, SYSTEM
+DUMPFILE | ```expdp.dmp```| dump file to import after database creation
+
 
 Here's an example run call amending the PASS environment variable skip DBCONTROL installation:
 

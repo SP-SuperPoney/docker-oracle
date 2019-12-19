@@ -1,3 +1,4 @@
+set echo off feed off
 --&1=$ORACLE_BASE
 --&2=$ORACLE_SID
 

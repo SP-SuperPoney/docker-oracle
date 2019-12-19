@@ -1,4 +1,8 @@
 #!/bin/bash
+export ORACLE_SID=${ORACLE_SID^^}
+export ORACLE_VOLUME_BASE=/u02/app/oracle
+
+source /assets/colorecho
 
 reuse_database(){
 	echo "Reuse existing database."
@@ -10,12 +14,12 @@ reuse_database(){
 		echo "Registering Database in /etc/oratab"
 		echo "$ORACLE_SID:$ORACLE_HOME:N" >> /etc/oratab
 		echo "Restore EM DB Console configuration"
-		restore_from_volume
+		#restore_from_volume
 		set_timezone
 	fi
 	chown oracle:dba /etc/oratab
 	chmod 664 /etc/oratab
-	provide_data_as_single_volume
+	#provide_data_as_single_volume
 	su oracle bash -c "${ORACLE_HOME}/bin/lsnrctl start"
 	su oracle bash -c 'echo startup\; | ${ORACLE_HOME}/bin/sqlplus -s -l / as sysdba'
 }
@@ -48,29 +52,29 @@ copy_dir(){
 
 save_to_volume(){
 	# symbolic links are not working
-	copy_dir "/u01/app/oracle/product/11.2.0/dbhome/oc4j/j2ee" "/u02/app/oracle/product/11.2.0/dbhome/oc4j/j2ee"
-	copy_dir "/u01/app/oracle/product/11.2.0/dbhome/sysman" "/u02/app/oracle/product/11.2.0/dbhome/sysman"
-	copy_dir "/u01/app/oracle/product/11.2.0/dbhome/${HOSTNAME}_${ORACLE_SID}" "/u02/app/oracle/product/11.2.0/dbhome/${HOSTNAME}_${ORACLE_SID}"
+	copy_dir "${ORACLE_BASE}/product/11.2.0/dbhome/oc4j/j2ee" "${ORACLE_VOLUME_BASE}/product/11.2.0/dbhome/oc4j/j2ee"
+	copy_dir "${ORACLE_BASE}/product/11.2.0/dbhome/sysman" "${ORACLE_VOLUME_BASE}/product/11.2.0/dbhome/sysman"
+	copy_dir "${ORACLE_BASE}/product/11.2.0/dbhome/${HOSTNAME}_${ORACLE_SID}" "${ORACLE_VOLUME_BASE}/product/11.2.0/dbhome/${HOSTNAME}_${ORACLE_SID}"
 }
 
 restore_from_volume(){
-	copy_dir "/u02/app/oracle/product/11.2.0/dbhome/oc4j/j2ee" "/u01/app/oracle/product/11.2.0/dbhome/oc4j/j2ee"
-	copy_dir "/u02/app/oracle/product/11.2.0/dbhome/sysman" "/u01/app/oracle/product/11.2.0/dbhome/sysman"
-	copy_dir "/u02/app/oracle/product/11.2.0/dbhome/${HOSTNAME}_${ORACLE_SID}" "/u01/app/oracle/product/11.2.0/dbhome/${HOSTNAME}_${ORACLE_SID}"
+	copy_dir "${ORACLE_VOLUME_BASE}/product/11.2.0/dbhome/oc4j/j2ee" "${ORACLE_BASE}/product/11.2.0/dbhome/oc4j/j2ee"
+	copy_dir "${ORACLE_VOLUME_BASE}/product/11.2.0/dbhome/sysman" "${ORACLE_BASE}/product/11.2.0/dbhome/sysman"
+	copy_dir "${ORACLE_VOLUME_BASE}/product/11.2.0/dbhome/${HOSTNAME}_${ORACLE_SID}" "${ORACLE_BASE}/product/11.2.0/dbhome/${HOSTNAME}_${ORACLE_SID}"
 }
 
 provide_data_as_single_volume(){
-	echo "Providing persistent data under /u02 to be used as Docker volume."
-	link_dir_to_volume "/u01/app/oracle/product/11.2.0/dbhome/dbs" "/u02/app/oracle/product/11.2.0/dbhome/dbs" 
-	link_dir_to_volume "/u01/app/oracle/admin" "/u02/app/oracle/admin"
-	link_dir_to_volume "/u01/app/oracle/audit" "/u02/app/oracle/audit"
-	link_dir_to_volume "/u01/app/oracle/cfgtoollogs" "/u02/app/oracle/cfgtoollogs"
-	link_dir_to_volume "/u01/app/oracle/checkpoints" "/u02/app/oracle/checkpoints"
-	link_dir_to_volume "/u01/app/oracle/diag" "/u02/app/oracle/diag"
-	link_dir_to_volume "/u01/app/oracle/fast_recovery_area" "/u02/app/oracle/fast_recovery_area"
-	link_dir_to_volume "/u01/app/oracle/oradata" "/u02/app/oracle/oradata"
-	link_dir_to_volume "/u01/app/oracle/ords" "/u02/app/oracle/ords"
-	chown -R oracle:dba /u02
+	echo "Providing persistent data under ${ORACLE_VOLUME_BASE} to be used as Docker volume."
+	link_dir_to_volume "${ORACLE_BASE}/product/11.2.0/dbhome/dbs" "${ORACLE_VOLUME_BASE}/product/11.2.0/dbhome/dbs" 
+	link_dir_to_volume "${ORACLE_BASE}/admin" "${ORACLE_VOLUME_BASE}/admin"
+	link_dir_to_volume "${ORACLE_BASE}/audit" "${ORACLE_VOLUME_BASE}/audit"
+	link_dir_to_volume "${ORACLE_BASE}/cfgtoollogs" "${ORACLE_VOLUME_BASE}/cfgtoollogs"
+	link_dir_to_volume "${ORACLE_BASE}/checkpoints" "${ORACLE_VOLUME_BASE}/checkpoints"
+	link_dir_to_volume "${ORACLE_BASE}/diag" "${ORACLE_VOLUME_BASE}/diag"
+	link_dir_to_volume "${ORACLE_BASE}/fast_recovery_area" "${ORACLE_VOLUME_BASE}/fast_recovery_area"
+	link_dir_to_volume "${ORACLE_BASE}/oradata" "${ORACLE_VOLUME_BASE}/oradata"
+	link_dir_to_volume "${ORACLE_BASE}/ords" "${ORACLE_VOLUME_BASE}/ords"
+	chown -R oracle:dba ${ORACLE_VOLUME_BASE}
 }
 
 set_timezone(){
@@ -86,9 +90,55 @@ remove_domain_from_resolve_conf(){
 	sed 's/domain.*//' /etc/resolv.conf.ori > /etc/resolv.conf
 }
 
+prerequisites(){
+	echo "Check whether container has enough memory"
+	# Github issue #219: Prevent integer overflow,
+	# only check if memory digits are less than 11 (single GB range and below) 
+	if [ `cat /sys/fs/cgroup/memory/memory.limit_in_bytes | wc -c` -lt 11 ]; then
+		if [ `cat /sys/fs/cgroup/memory/memory.limit_in_bytes` -lt 1073741824 ]; then
+			echo "Error: The container doesn't have enough memory allocated."
+			echo "A database container needs at least 1 GB of memory."
+			echo "You currently only have $((`cat /sys/fs/cgroup/memory/memory.limit_in_bytes`/1024/1024/1024)) GB allocated to the container."
+			exit 1;
+		fi;
+	fi;
+
+	echo "Check that hostname doesn't container any _"
+	# Github issue #711
+	if hostname | grep -q "_"; then
+		echo "Error: The hostname must not container any '_'".
+		echo "Your current hostname is '$(hostname)'"
+	fi;
+
+	echo "Check ORACLE SID"
+	# Default for ORACLE SID
+	if [ "$ORACLE_SID" == "" ]; then
+		export ORACLE_SID=ORCL
+	else
+		# Make ORACLE_SID upper case
+		# Github issue # 984
+		export ORACLE_SID=${ORACLE_SID^^}
+
+		# Check whether SID is no longer than 12 bytes
+		# Github issue #246: Cannot start OracleDB image
+		if [ "${#ORACLE_SID}" -gt 12 ]; then
+			echo "Error: The ORACLE_SID must only be up to 12 characters long."
+			exit 1;
+		fi;
+
+		# Check whether SID is alphanumeric
+		# Github issue #246: Cannot start OracleDB image
+		if [[ "$ORACLE_SID" =~ [^a-zA-Z0-9] ]]; then
+			echo "Error: The ORACLE_SID must be alphanumeric."
+			exit 1;
+		fi;
+	fi;	
+}
+
 create_database(){
+	prerequisites
 	echo "Creating database."
-	provide_data_as_single_volume
+	#provide_data_as_single_volume
 	remove_domain_from_resolve_conf
 	su oracle bash -c "${ORACLE_HOME}/bin/lsnrctl start"
 	if [ $DBCONTROL == "true" ]; then
@@ -132,16 +182,22 @@ create_database(){
 	echo "export CONNECT_STRING=${CONNECT_STRING}" >> /home/oracle/.bash_profile
 	echo "export CONNECT_STRING=${CONNECT_STRING}" >> /root/.bashrc
 	echo "Save configuration to volume"
-	save_to_volume
+	#save_to_volume
+}
+
+post_create_db(){
+	chown -R oracle:oinstall ${ORACLE_BASE}/admin/oracle/dpdump
+	su oracle -c "/assets/entrypoint_oracle.sh"
 }
 
 start_database(){
 	# Startup database if oradata directory is found otherwise create a database
-	if [ -d /u02/app/oracle/oradata ]; then
+	if [ -d ${ORACLE_BASE}/oradata ]; then
 		reuse_database
 	else
 		set_timezone
 		create_database
+		post_create_db
 	fi
 
 	# (re)start EM Database Console
@@ -153,10 +209,14 @@ start_database(){
 
 	# Successful installation/startup
 	echo ""
-	echo "Database ready to use. Enjoy! ;-)"
+	echo_green "Database ready to use. Enjoy! ;-)"
+
+	# Tail on alert log
+	echo "The following output is now a tail of the alert.log:"
+	tail -f $ORACLE_BASE/diag/rdbms/*/*/trace/alert*.log &
 
 	# trap interrupt/terminate signal for graceful termination
-	trap "su oracle bash -c 'echo Starting graceful shutdown... && echo shutdown immediate\; | ${ORACLE_HOME}/bin/sqlplus -S / as sysdba && /assets/stop_ords.sh && ${ORACLE_HOME}/bin/lsnrctl stop'" INT TERM
+	trap "su oracle bash -c 'echo Starting graceful shutdown... && echo shutdown immediate\; | ${ORACLE_HOME}/bin/sqlplus -S / as sysdba && ${ORACLE_HOME}/bin/lsnrctl stop'" INT TERM
 
 	# waiting for termination of tns listener
 	PID=`ps -e | grep tnslsnr | awk '{print $1}'`
