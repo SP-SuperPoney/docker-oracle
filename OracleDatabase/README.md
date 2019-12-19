@@ -17,7 +17,7 @@ Complete the following steps to create a new container:
 
 1. Create the container
 
-		docker run -v oracle:/u02 -it -p 1158:1158 -p 8081:8081 -p 1521:1521 -h oracle --name oracle oracle/11.2.0.4:db
+		docker run -v oracle:/u01 -it -p 1158:1158 -p 1521:1521 -h oracle --name oracle oracle/11.2.0.4:db
 
 
 
@@ -54,13 +54,13 @@ docker run -e PASS=manager -e DBCONTROL=false -d -p 1158:1158 -p 1521:1521 -h or
 The image defines a volume for ```/u02```. You may map this volume to a storage solution of your choice. Here's an example using a named volume ```oraclevolume```:
 
 ```
-docker run -v oraclevolume:/u02 -d -p 1158:1158 -p 8081:8081 -p 1521:1521 -h oracle --name oracle oracle/11.2.0.4:db
+docker run -v oraclevolume:/u01 -d -p 1158:1158 -p 1521:1521 -h oracle --name oracle oracle/11.2.0.4:db
 ```
 
-Here's an example mapping the local directory ```$HOME/docker/odb/u02``` to ```/u02```.
+Here's an example mapping the local directory ```$HOME/docker/oracle/u01``` to ```/u01```.
 
 ```
-docker run -v $HOME/docker/odb/u02:/u02 -d -p 1158:1158 -p 1521:1521 -h oracle --name oracle oracle/11.2.0.4:db
+docker run -v $HOME/docker/odb/u01:/u01 -d -p 1158:1158 -p 1521:1521 -h oracle --name oracle oracle/11.2.0.4:db
 ```
 
 **Please note**: Volumes mapped to local directories are not stable, at least not in Docker for Mac 1.12.0. E.g. creating a database may never finish. So I recommend not to use local mapped directories for the time being. Alternatively you may use a volume plugin. A comprehensive list of volume plugins is listed [here](https://docs.docker.com/engine/extend/plugins/#volume-plugins).
