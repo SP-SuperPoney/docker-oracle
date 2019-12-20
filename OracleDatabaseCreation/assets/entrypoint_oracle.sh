@@ -6,9 +6,9 @@ source ~/.bashrc
 
 echo_green "starting bash script $0"
 export ORACLE_SID=${ORACLE_SID^^}
-alert_log="$ORACLE_BASE/diag/rdbms/orcl/$ORACLE_SID/trace/alert_$ORACLE_SID.log"
+alert_log="$ORACLE_BASE/diag/rdbms/${ORACLE_SID,,}/${ORACLE_SID^^}/trace/alert_${ORACLE_SID^^}.log"
 listener_log="$ORACLE_BASE/diag/tnslsnr/$HOSTNAME/listener/trace/listener.log"
-pfile=$ORACLE_HOME/dbs/init$ORACLE_SID.ora
+pfile=$ORACLE_HOME/dbs/init.ora
 pre_impdp_script=/assets/sql/pre_impdp.sql
 post_impdp_script=/assets/sql/post_impdp.sql
 
@@ -24,9 +24,9 @@ trap_db() {
 }
 
 change_dpdump_dir () {
-	echo_green "Changing dpdump dir to ${ORACLE_BASE}/admin/oracle/dpdump"
+	echo_green "Changing dpdump dir to ${ORACLE_BASE}/admin/oracle/${ORACLE_SID,,}"
 	sqlplus / as sysdba <<-EOF |
-		create or replace directory data_pump_dir as '${ORACLE_BASE}/admin/oracle/dpdump';
+		create or replace directory data_pump_dir as '${ORACLE_BASE}/admin/oracle/${ORACLE_SID,,}';
 		commit;
 		exit 0
 	EOF

@@ -17,12 +17,25 @@
             "problemMatcher": []
         },
         {
+            "label": "Build docker run image",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/OracleDatabaseRunnning"
+            },
+            "command": "pwd && docker build . --tag oracle/11.2.0.4:run",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },        
+        {
             "label": "Run docker database image",
             "type": "shell",
             "options": {
-                "cwd": "${workspaceFolder}/OracleDatabase"
+                "cwd": "${workspaceFolder}/OracleDatabaseRunnning"
             },
-            "command": "pwd && docker run -v oracle:/u01 -it -p 1158:1158 -p 1521:1521 -h oracle --name oracle oracle/11.2.0.4:db",
+            "command": "pwd && docker run -v oracle:/u01 -it -p 1158:1158 -p 1521:1521 -h oracle --name oracle oracle/11.2.0.4:run",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -33,7 +46,7 @@
             "label": "Build docker database image",
             "type": "shell",
             "options": {
-                "cwd": "${workspaceFolder}/OracleDatabase"
+                "cwd": "${workspaceFolder}/OracleDatabaseCreation"
             },
             "command": "pwd && docker build . --tag oracle/11.2.0.4:db",
             "group": {
