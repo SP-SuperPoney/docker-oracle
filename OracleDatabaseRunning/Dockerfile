@@ -1,9 +1,9 @@
-FROM oracle/11.2.0.4:base
+FROM oracle/11.2.0.4:db
 
 LABEL maintainer="eric.clement@juxta.fr"
-LABEL description="Oracle Database 11.2.0.4 db"
-LABEL build.command="docker build . --tag oracle/11.2.0.4:db"
-LABEL run.command="docker run -v oracle:/u01 -it -p 1158:1158 -p 8081:8081 -p 1521:1521 -h oracle --name oracle oracle/11.2.0.4:base"
+LABEL description="Oracle Database 11.2.0.4 run"
+LABEL build.command="docker build . --tag oracle/11.2.0.4:run"
+LABEL run.command="docker run -v oracle:/u01 -it -p 1158:1158 -p 1521:1521 -h oracle --name oracle oracle/11.2.0.4:db"
 
 # environment variables (defaults for DBCA and entrypoint.sh)
 ENV DBCONTROL=true \
