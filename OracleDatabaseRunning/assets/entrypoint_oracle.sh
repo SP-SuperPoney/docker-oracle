@@ -24,10 +24,16 @@ trap_db() {
 }
 
 change_dpdump_dir () {
-	echo_green "Changing dpdump dir to ${ORACLE_BASE}/admin/oracle/dpdump"
+	echo_green "Changing dpdump dir to ${ORACLE_BASE}/admin/${ORACLE_SID,,}/dpdump"
 	sqlplus / as sysdba <<-EOF |
-		create or replace directory data_pump_dir as '${ORACLE_BASE}/admin/oracle/dpdump';
-		commit;
+		create or replace directory data_pump_dir as '${ORACLE_BASE}/admin/${ORACLE_SID,,}/dpdump';
+
+		set linesize 90
+		col owner format a10
+		col directory_name format a20
+		col directory_path format a50
+		select * from all_directories where directory_name = 'DATA_PUMP_DIR';
+
 		exit 0
 	EOF
 	while read line; do echo -e "sqlplus: $line"; done
@@ -51,13 +57,18 @@ post_impdp() {
 import() {
 	echo_green "Download dumpfile ${ORACLE_ASSETS}/${DUMPFILE} to ${ORACLE_BASE}/admin/${ORACLE_SID,,}/dpdump"
 	wget -q --no-check-certificate ${ORACLE_ASSETS}/${DUMPFILE} -O ${ORACLE_BASE}/admin/${ORACLE_SID,,}/dpdump/${DUMPFILE}
-	change_dpdump_dir
-	echo "Import dump $DUMPFILE..."
-	impdp \"/ as sysdba\" directory=data_pump_dir dumpfile=$DUMPFILE logfile=$DUMPFILE.$$.log table_exists_action=replace
-	monitor ${ORACLE_BASE}/admin/${ORACLE_SID,,}/dpdump/$DUMPFILE.$$.log log_import &	
-	MON_IMPDP_PID=$!
-	rm -f ${ORACLE_ASSETS}/${DUMPFILE}
-	echo_green "Dump $DUMPFILE imported."	
+
+	if [ -f ${ORACLE_BASE}/admin/${ORACLE_SID,,}/dpdump/${DUMPFILE} ]; then
+		change_dpdump_dir
+		echo "Import dump ${ORACLE_ASSETS}/${DUMPFILE}..."
+		impdp \"/ as sysdba\" directory=data_pump_dir dumpfile=${DUMPFILE} logfile=$DUMPFILE.$$.log table_exists_action=replace
+		monitor ${ORACLE_BASE}/admin/${ORACLE_SID,,}/dpdump/$DUMPFILE.$$.log log_import &	
+		MON_IMPDP_PID=$!
+		rm -f ${ORACLE_ASSETS}/${DUMPFILE}
+		echo_green "Dump $DUMPFILE imported."
+	else
+		echo_yellow "Dumpfile ${ORACLE_ASSETS}/${DUMPFILE} does not exists !"
+	fi
 }
 
 if [ -n "$DUMPFILE" ]; then
