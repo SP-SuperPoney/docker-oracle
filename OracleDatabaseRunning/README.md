@@ -15,15 +15,30 @@ Due to [OTN Developer License Terms](http://www.oracle.com/technetwork/licenses/
 
 Complete the following steps to create a new container:
 
-1. Create the base container with or without import using the base image ```oracle/11.2.0.4:db``` environment parameters (see ```Options``` section below). IE:
+1. Pull the base image ```oracle-db``` from Juxta custom repository. Add the custom ```jxt-dev-pgsql.juxta.fr:5000``` insecure URL in your ```deamon.json``` file :
+		/etc/docker/daemon.json
+		C:\ProgramData\docker\config\daemon.json
+or in Docker Desktop : settings -> deamon 
+
+add in file :
+
+		"insecure-registries": [
+			"jxt-dev-pgsql.juxta.fr:5000"
+		],
+
+Restart docker then finally pull the image :
+
+		docker pull jxt-dev-pgsql.juxta.fr:5000/oracle-db
+
+2. Create the base container with or without import using the base image ```oracle-db``` environment parameters (see ```Options``` section below). IE:
 
 		docker run -v juxta:/u01 -it -p 1158:1158 -p 1521:1521 -h juxta --name juxta --env DBCONTROL=false --env GDBNAME=juxta.docker --env ORACLE_SID=juxta --env SERVICE_NAME=juxta.docker --env PASS=sys --env DUMPFILE='' oracle/11.2.0.4:db
 
-2. wait around **20 minutes** until the Oracle database instance is created. Check logs with ```docker logs -f -t oracle```. The container is ready to use when the last line in the log is ```Database ready to use. Enjoy! ;-)```. The container stops if an error occurs. Check the logs to determine how to proceed.
+3. wait around **20 minutes** until the Oracle database instance is created. Check logs with ```docker logs -f -t oracle```. The container is ready to use when the last line in the log is ```Database ready to use. Enjoy! ;-)```. The container stops if an error occurs. Check the logs to determine how to proceed.
 
-3. get the container id : ```docker ps```
+4. get the container id : ```docker ps```
 
-4. [docker commit](https://docs.docker.com/engine/reference/commandline/commit/) the running container to a fully re-usable one:
+5. [docker commit](https://docs.docker.com/engine/reference/commandline/commit/) the running container to a fully re-usable one:
 
 		docker commit --message "Running JUXTA instance"--change='CMD ["apachectl", "-DFOREGROUND"]' --change "EXPOSE 80" container_id  oracle/11.2.0.4:juxta
 
