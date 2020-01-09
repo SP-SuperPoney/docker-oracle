@@ -2,8 +2,8 @@ FROM oracle/11.2.0.4:db
 
 LABEL maintainer="eric.clement@juxta.fr"
 LABEL description="Oracle Database 11.2.0.4 run"
-LABEL build.command="docker build . --tag oracle/11.2.0.4:run"
-LABEL run.command="docker run -v oracle:/u01 -it -p 1158:1158 -p 1521:1521 -h oracle --name oracle oracle/11.2.0.4:db"
+LABEL build.command="docker build . --tag jxt-dev-pgsql.juxta.fr:5000/oracle-run"
+LABEL run.command="docker run -v oracle:/u01 -it -p 1158:1158 -p 1521:1521 -h oracle --name oracle jxt-dev-pgsql.juxta.fr:5000/oracle-db"
 
 # environment variables (defaults for DBCA and entrypoint.sh)
 ENV DBCONTROL=true \
@@ -12,7 +12,8 @@ ENV DBCONTROL=true \
     ORACLE_SID=oracle \
     SERVICE_NAME=oracle.docker \
     PASS=oracle \
-    DUMPFILE=expdp.dmp
+    DUMPFILE=expdp.dmp \
+    PATCHFILE=
 
 # copy all scripts
 ADD assets /assets/

@@ -160,6 +160,31 @@ rm -f /tmp/sqlcl.zip
 # chown -R oracle:oinstall ${ORACLE_HOME}/ords
 # rm -f /tmp/ords.zip
 
-# cleanup
-rm -r -f /tmp/*
-rm -r -f /var/tmp/*
+# Remove not needed components
+# APEX
+rm -rf $ORACLE_HOME/apex && \
+# ORDS
+rm -rf $ORACLE_HOME/ords && \
+# SQL Developer
+rm -rf $ORACLE_HOME/sqldeveloper && \
+# UCP connection pool
+rm -rf $ORACLE_HOME/ucp && \
+# All installer files
+rm -rf $ORACLE_HOME/lib/*.zip && \
+# OUI backup
+rm -rf $ORACLE_HOME/inventory/backup/* && \
+# Network tools help
+rm -rf $ORACLE_HOME/network/tools/help && \
+# Database upgrade assistant
+rm -rf $ORACLE_HOME/assistants/dbua && \
+# Database migration assistant
+rm -rf $ORACLE_HOME/dmu && \
+# Remove pilot workflow installer
+rm -rf $ORACLE_HOME/install/pilot && \
+# Support tools
+rm -rf $ORACLE_HOME/suptools && \
+# Temp location
+rm -rf /tmp/* && \
+rm -rf /var/tmp/* && \
+# Database files directory
+rm -rf /tmp/oracle/database
