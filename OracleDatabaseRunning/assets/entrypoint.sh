@@ -191,7 +191,7 @@ entrypoint_impdp(){
 }
 
 entrypoint_patch(){
-	su oracle -c "/assets/entrypoint_patch.sh"
+	su oracle -c "/assets/runUserScripts.sh"
 }
 
 start_database(){
@@ -201,6 +201,8 @@ start_database(){
 	else
 		set_timezone
 		create_database
+		entrypoint_impdp
+		entrypoint_patch
 	fi
 
 	# (re)start EM Database Console
@@ -239,8 +241,6 @@ case "$1" in
 	'')
 		# default behaviour when no parameters are passed to the container
 		start_database
-		entrypoint_impdp
-		entrypoint_patch
 		wait_for_interrupt
 		;;
 	*)

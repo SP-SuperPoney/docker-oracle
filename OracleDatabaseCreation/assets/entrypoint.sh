@@ -180,7 +180,7 @@ create_database(){
 }
 
 post_create_db(){
-	chown -R oracle:oinstall ${ORACLE_BASE}/admin/${ORACLE_SID,,}/dpdump
+	chown -R oracle:oinstall ${ORACLE_BASE}/admin/${ORACLE_SID^^}/dpdump
 	su oracle -c "/assets/entrypoint_oracle.sh"
 }
 
