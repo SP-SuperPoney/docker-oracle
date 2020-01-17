@@ -41,9 +41,19 @@
                 "isDefault": true
             },
             "problemMatcher": []
+        },
+        {
+            "label": "4. Push image to regisry (oracle/11.2.0.4:db)",
+            "type": "shell",
+            "command": "docker tag oracle/11.2.0.4:db localhost:5000/oracle-db && docker push localhost:5000/oracle-db",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
         },        
         {
-            "label": "4. Push image to regisry (oracle/11.2.0.4:run)",
+            "label": "5. Push image to regisry (oracle/11.2.0.4:run)",
             "type": "shell",
             "command": "docker tag oracle/11.2.0.4:run localhost:5000/oracle-run && docker push localhost:5000/oracle-run",
             "group": {
