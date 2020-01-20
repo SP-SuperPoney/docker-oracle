@@ -19,10 +19,12 @@ monitor() {
 
 sqlplus_on_behalf(){
     echo_green "Executing $1 on behalf of $RUN_SCRIPTS_IN_SCHEMA..."
-    echo "exit" | $ORACLE_HOME/bin/sqlplus -s "/ as sysdba" @"$1" >> "${LOCAL_SCRIPT_ROOT}/log/$$.log"
-    #echo "Start query on %%c/[%%s]******@\"%%b/%%a\"@%SQL_FILE2% %%a %%s "%SPOOL_PATH%" %%c"
+    #echo "exit" | $ORACLE_HOME/bin/sqlplus -s "/ as sysdba"/[$RUN_SCRIPTS_IN_SCHEMA] @"$1" >> "${LOCAL_SCRIPT_ROOT}/log/$$.log"
+    #echo "Start query on %%c/[%%s]******@\"%%b/%%a\" @%SQL_FILE2% %%a %%s "%SPOOL_PATH%" %%c"
     #monitor "${LOCAL_SCRIPT_ROOT}/log/$$.log"
-    cat "${LOCAL_SCRIPT_ROOT}/log/$$.log"
+    if [ -f ${LOCAL_SCRIPT_ROOT}/log/$$.log ]; then
+        cat "${LOCAL_SCRIPT_ROOT}/log/$$.log"
+    fi
 }
 
 # Check whether parameter has been passed on

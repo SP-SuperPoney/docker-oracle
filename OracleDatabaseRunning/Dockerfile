@@ -18,7 +18,7 @@ ENV RUN_SCRIPTS_IN_SCHEMA=FSV
 ENV SCRIPTS_ROOT=/patch/fsv
 
 # copy all scripts
-ADD assets /assets/
+COPY assets /assets/
 
 # database port, Enterprise Manager Database Control port
 EXPOSE 1521 1158
