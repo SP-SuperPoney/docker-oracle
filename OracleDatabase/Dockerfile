@@ -54,16 +54,14 @@ ENV PATH=$ORACLE_HOME/bin:$ORACLE_HOME/OPatch/:/usr/sbin:$PATH \
 
 # Copy files needed during both installation and runtime
 # -------------
-COPY $SETUP_LINUX_FILE $CHECK_SPACE_FILE $INSTALL_DIR/
-COPY $RUN_FILE $START_FILE $CREATE_DB_FILE $CONFIG_RSP $PWD_FILE $CHECK_DB_FILE $USER_SCRIPTS_FILE $ORACLE_BASE/
+COPY ./scripts/$SETUP_LINUX_FILE ./scripts/$CHECK_SPACE_FILE $INSTALL_DIR/
+COPY ./scripts/$RUN_FILE ./scripts/$START_FILE ./scripts/$CREATE_DB_FILE ./assets/$CONFIG_RSP ./scripts/$PWD_FILE ./scripts/$CHECK_DB_FILE ./scripts/$USER_SCRIPTS_FILE $ORACLE_BASE/
 
 RUN chmod ug+x $INSTALL_DIR/*.sh && \
     sync && \
     $INSTALL_DIR/$CHECK_SPACE_FILE && \
     $INSTALL_DIR/$SETUP_LINUX_FILE && \
     rm -rf $INSTALL_DIR
-
-
 
 #############################################
 # -------------------------------------------
@@ -81,7 +79,7 @@ RUN yum -y install unzip
 # Copy DB install file
 ADD  ${ASSETS_URL}/$INSTALL_FILE_1 $INSTALL_DIR/
 ADD  ${ASSETS_URL}/$INSTALL_FILE_2 $INSTALL_DIR/
-COPY --chown=oracle:oinstall $INSTALL_RSP $INSTALL_DB_BINARIES_FILE $INSTALL_DIR/
+COPY --chown=oracle:oinstall ./assets/$INSTALL_RSP ./scripts/$INSTALL_DB_BINARIES_FILE $INSTALL_DIR/
 
 # Install DB software binaries
 USER oracle
