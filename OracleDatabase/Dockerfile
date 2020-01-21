@@ -27,8 +27,9 @@ LABEL MAINTAINER="Eric CLEMENT <eric.clement@juxta.fr>"
 
 # Environment variables required for this build (do NOT change)
 # -------------------------------------------------------------
-ENV ASSETS_URL=http://jxt-dev-pgsql.juxta.fr/oracle-assets
-#ENV ASSETS_URL=http://192.168.2.188/oracle-assets
+ENV ASSETS_LOCATION=./assets
+#ENV ASSETS_LOCATION=http://jxt-dev-pgsql.juxta.fr/oracle-assets
+#ENV ASSETS_LOCATION=http://192.168.2.188/oracle-assets
 
 ENV ORACLE_BASE=/opt/oracle \
     ORACLE_HOME=/opt/oracle/product/11.2.0/dbhome_1 \
@@ -71,21 +72,20 @@ RUN chmod ug+x $INSTALL_DIR/*.sh && \
 
 FROM base AS builder
 
-ARG DB_EDITION
-
 # Install unzip for unzip operation
 RUN yum -y install unzip
 
 # Copy DB install file
-ADD  ${ASSETS_URL}/$INSTALL_FILE_1 $INSTALL_DIR/
-ADD  ${ASSETS_URL}/$INSTALL_FILE_2 $INSTALL_DIR/
+ADD  ${ASSETS_LOCATION}/$INSTALL_FILE_1 $INSTALL_DIR/
+ADD  ${ASSETS_LOCATION}/$INSTALL_FILE_2 $INSTALL_DIR/
+RUN  chown -R oracle:oinstall $INSTALL_DIR/
 COPY --chown=oracle:oinstall ./assets/$INSTALL_RSP ./scripts/$INSTALL_DB_BINARIES_FILE $INSTALL_DIR/
 
 # Install DB software binaries
 USER oracle
 RUN chmod ug+x $INSTALL_DIR/*.sh && \
     sync && \
-    $INSTALL_DIR/$INSTALL_DB_BINARIES_FILE $DB_EDITION
+    $INSTALL_DIR/$INSTALL_DB_BINARIES_FILE
 
 HEALTHCHECK --interval=1m --start-period=5m \
    CMD "$ORACLE_BASE/$CHECK_DB_FILE" >/dev/null || exit 1
@@ -96,7 +96,7 @@ HEALTHCHECK --interval=1m --start-period=5m \
 # -------------------------------------------
 #############################################
 
-FROM base
+FROM base AS database
 
 USER oracle
 COPY --chown=oracle:oinstall --from=builder $ORACLE_BASE $ORACLE_BASE

@@ -3,10 +3,12 @@
 usage() {
   cat << EOF
 
-Usage: buildDockerImage.sh [-o] [Docker build option]
+Usage: buildDockerImage.sh [-o] [-d] [Docker build option]
 Builds a Docker Image for Oracle Database.
   
 Parameters:
+   -d: debug mode, do not remove dangling images (intermitten images with tag <none>)
+   -t: target a specific intermitten images (base, builder, database)
    -o: passes on Docker build option
    -h: usage
 
@@ -33,20 +35,30 @@ checkDockerVersion() {
 ##############
 
 # Parameters
+DEBUG=0
 STANDARD=1
 VERSION="11.2.0.4"
-DOCKEROPS=""
+DOCKEROPS="--force-rm=true --no-cache=true"
 MIN_DOCKER_VERSION="17.09"
 DOCKERFILE="Dockerfile"
+EDITION="se"
+TARGET=""
 
-while getopts "h:o:" optname; do
+while getopts "h:dto:" optname; do
   case "$optname" in
     "h")
       usage
       exit 0;
       ;;
+    "t")
+      TARGET=${TARGET}
+      ;;       
+    "d")
+      DEBUG=1
+      DOCKEROPS=""
+      ;;      
     "o")
-      DOCKEROPS="$OPTARG"
+      DOCKEROPS="${DOCKEROPS} ${OPTARG}"
       ;;
     "?")
       usage;
@@ -61,16 +73,8 @@ done
 
 checkDockerVersion
 
-EDITION="se"
-
-# Oracle Database Image Name
-IMAGE_NAME="oracle/database:$VERSION-$EDITION"
-
-if [ ! "$FORCEMD5" -eq 1 ]; then
-  checksumPackages
-else
-  echo "Ignored MD5 checksum."
-fi
+#Image Name
+IMAGE_NAME="juxta/oracle:$VERSION-$EDITION"
 echo "=========================="
 echo "DOCKER info:"
 docker info
@@ -105,8 +109,8 @@ echo "Building image '$IMAGE_NAME' ..."
 
 # BUILD THE IMAGE (replace all environment variables)
 BUILD_START=$(date '+%s')
-docker build --force-rm=true --no-cache=true \
-       $DOCKEROPS $PROXY_SETTINGS --build-arg DB_EDITION=$EDITION \
+docker build \
+       $DOCKEROPS $PROXY_SETTINGS $TARGET --build-arg DB_EDITION=$EDITION \
        -t $IMAGE_NAME -f $DOCKERFILE . || {
   echo ""
   echo "ERROR: Oracle Database Docker Image was NOT successfully created."
@@ -114,8 +118,13 @@ docker build --force-rm=true --no-cache=true \
   exit 1
 }
 
-# Remove dangling images (intermitten images with tag <none>)
-yes | docker image prune > /dev/null
+if [ ! "$DEBUG" -eq 1 ]; then
+  echo "Keep dangling images (intermitten images with tag <none>)."
+else
+  echo "Remove dangling images (intermitten images with tag <none>)"
+  yes | docker image prune > /dev/null  
+fi
+
 
 BUILD_END=$(date '+%s')
 BUILD_ELAPSED=`expr $BUILD_END - $BUILD_START`

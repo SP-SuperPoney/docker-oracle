@@ -9,23 +9,7 @@
 # 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
-
-# Convert $1 into upper case via "^^" (bash version 4 onwards)
-EDITION=${1^^}
-
-# Check whether edition has been passed on
-if [ "$EDITION" == "" ]; then
-   echo "ERROR: No edition has been passed on!"
-   echo "Please specify the correct edition!"
-   exit 1;
-fi;
-
-# Check whether correct edition has been passed on
-if [ "$EDITION" != "EE" -a "$EDITION" != "SE" -a "$EDITION" != "SEONE" -a "$EDITION" != "PE"]; then
-   echo "ERROR: Wrong edition has been passed on!"
-   echo "Edition $EDITION is no a valid edition!"
-   exit 1;
-fi;
+EDITION="SE"
 
 # Check whether ORACLE_BASE is set
 if [ "$ORACLE_BASE" == "" ]; then
