@@ -27,6 +27,9 @@ LABEL MAINTAINER="Eric CLEMENT <eric.clement@juxta.fr>"
 
 # Environment variables required for this build (do NOT change)
 # -------------------------------------------------------------
+ENV ASSETS_URL=http://jxt-dev-pgsql.juxta.fr/oracle-assets
+#ENV ASSETS_URL=http://192.168.2.188/oracle-assets
+
 ENV ORACLE_BASE=/opt/oracle \
     ORACLE_HOME=/opt/oracle/product/11.2.0/dbhome_1 \
     INSTALL_DIR=/opt/install \
@@ -76,7 +79,9 @@ ARG DB_EDITION
 RUN yum -y install unzip
 
 # Copy DB install file
-COPY --chown=oracle:oinstall $INSTALL_FILE_1 $INSTALL_FILE_2 $INSTALL_RSP $INSTALL_DB_BINARIES_FILE $INSTALL_DIR/
+ADD  ${ASSETS_URL}/$INSTALL_FILE_1 $INSTALL_DIR/
+ADD  ${ASSETS_URL}/$INSTALL_FILE_2 $INSTALL_DIR/
+COPY --chown=oracle:oinstall $INSTALL_RSP $INSTALL_DB_BINARIES_FILE $INSTALL_DIR/
 
 # Install DB software binaries
 USER oracle
