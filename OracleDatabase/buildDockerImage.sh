@@ -3,7 +3,7 @@
 usage() {
   cat << EOF
 
-Usage: buildDockerImage.sh [-o] [-d] [Docker build option]
+Usage: buildDockerImage.sh [-o] [-d] [-t target] [Docker build option]
 Builds a Docker Image for Oracle Database.
   
 Parameters:

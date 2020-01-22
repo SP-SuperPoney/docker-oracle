@@ -9,6 +9,7 @@
 # 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
+echo -e "\033[32mstarting bash script $0\033[0m"
 
 REQUIRED_SPACE_GB=15
 AVAILABLE_SPACE_GB=`df -PB 1G / | tail -n 1 | awk '{ print $4 }'`

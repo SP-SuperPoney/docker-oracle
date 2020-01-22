@@ -9,6 +9,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
+echo -e "\033[32mstarting bash script $0\033[0m"
 
 ORACLE_PWD=$1
 ORACLE_SID="`grep $ORACLE_HOME /etc/oratab | cut -d: -f1`"

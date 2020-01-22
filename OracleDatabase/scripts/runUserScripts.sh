@@ -9,6 +9,7 @@
 # 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
+echo -e "\033[32mstarting bash script $0\033[0m"
 
 SCRIPTS_ROOT="$1";
 

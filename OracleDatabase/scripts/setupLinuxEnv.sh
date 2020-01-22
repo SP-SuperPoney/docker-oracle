@@ -9,6 +9,7 @@
 # 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
+echo -e "\033[32mstarting bash script $0\033[0m"
 
 # Setup filesystem and oracle user
 # Adjust file permissions, go to /opt/oracle as user 'oracle' to proceed with Oracle installation
@@ -25,3 +26,12 @@ ln -s $ORACLE_BASE/$PWD_FILE /home/oracle/ && \
 echo oracle:oracle | chpasswd && \
 chown -R oracle:oinstall $ORACLE_BASE && \
 usermod -a -G oinstall oracle
+
+echo "Change timezone to Central European Time (CET)."
+unlink /etc/localtime
+ln -s /usr/share/zoneinfo/Europe/Brussels /etc/localtime
+
+# Workaround to improve startup time of DBCA
+# remove domain entry, see MOS Doc ID 362092.1
+cp /etc/resolv.conf /etc/resolv.conf.ori
+sed 's/domain.*//' /etc/resolv.conf.ori > /etc/resolv.conf

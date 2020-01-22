@@ -11,7 +11,7 @@
 # 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
-
+echo -e "\033[32mstarting bash script $0\033[0m"
 set -e
 
 # Check whether ORACLE_SID is passed on
@@ -19,13 +19,7 @@ export ORACLE_SID=${1:-ORCL}
 
 # Auto generate ORACLE PWD if not passed on
 export ORACLE_PWD=${3:-"`openssl rand -base64 8`1"}
-echo "ORACLE PASSWORD FOR SYS, SYSTEM : $ORACLE_PWD";
-
-# Replace place holders in response file
-cp $ORACLE_BASE/$CONFIG_RSP $ORACLE_BASE/dbca.rsp
-sed -i -e "s|###ORACLE_SID###|$ORACLE_SID|g" $ORACLE_BASE/dbca.rsp
-sed -i -e "s|###ORACLE_PWD###|$ORACLE_PWD|g" $ORACLE_BASE/dbca.rsp
-sed -i -e "s|###ORACLE_CHARACTERSET###|$ORACLE_CHARACTERSET|g" $ORACLE_BASE/dbca.rsp
+echo -e "\033[0;31mORACLE PASSWORD FOR SYS, SYSTEM :\033[0m $ORACLE_PWD";
 
 # If there is greater than 8 CPUs default back to dbca memory calculations
 # dbca will automatically pick 40% of available memory for Oracle DB
@@ -33,8 +27,10 @@ sed -i -e "s|###ORACLE_CHARACTERSET###|$ORACLE_CHARACTERSET|g" $ORACLE_BASE/dbca
 # However, bigger environment can and should use more of the available memory
 # This is due to Github Issue #307
 if [ `nproc` -gt 8 ]; then
-   sed -i -e "s|totalMemory=2048||g" $ORACLE_BASE/dbca.rsp
+   #sed -i -e "s|totalMemory=2048||g" $ORACLE_BASE/dbca.rsp
+   DBCA_TOTAL_MEMORY="-totalMemory 2048"
 fi;
+
 
 # Create network related config files (sqlnet.ora, tnsnames.ora, listener.ora)
 mkdir -p $ORACLE_HOME/network/admin
@@ -53,12 +49,29 @@ DEDICATED_THROUGH_BROKER_LISTENER=ON
 DIAG_ADR_ENABLED = off
 " > $ORACLE_HOME/network/admin/listener.ora
 
+if [ $DBCONTROL == "true" ]; then
+  EM_CONFIGURATION=LOCAL
+else
+  EM_CONFIGURATION=NONE
+fi
+
+# # Replace place holders in response file
+# cp $ORACLE_BASE/$CONFIG_RSP $ORACLE_BASE/dbca.rsp
+# sed -i -e "s|###ORACLE_SID###|$ORACLE_SID|g" $ORACLE_BASE/dbca.rsp
+# sed -i -e "s|###ORACLE_PWD###|$ORACLE_PWD|g" $ORACLE_BASE/dbca.rsp
+# sed -i -e "s|###ORACLE_CHARACTERSET###|$ORACLE_CHARACTERSET|g" $ORACLE_BASE/dbca.rsp
+#dbca -silent -createDatabase -responseFile $ORACLE_BASE/dbca.rsp -emConfiguration ${EM_CONFIGURATION} [...]
+
 # Start LISTENER and run DBCA
 lsnrctl start &&
-dbca -silent -createDatabase -responseFile $ORACLE_BASE/dbca.rsp -emConfiguration LOCAL ||
+dbca -silent -createDatabase -templateName General_Purpose.dbc -gdbname ${SERVICE_NAME} -sid ${ORACLE_SID} \
+     -responseFile NO_VALUE -characterSet $ORACLE_CHARACTERSET $DBCA_TOTAL_MEMORY \
+     -emConfiguration ${EM_CONFIGURATION} -dbsnmpPassword ${ORACLE_PWD} -sysmanPassword ${ORACLE_PWD} \
+     -sysPassword ${ORACLE_PWD} -systemPassword ${ORACLE_PWD} -initparams java_jit_enabled=FALSE,audit_trail=NONE,audit_sys_operations=FALSE ||
  cat /opt/oracle/cfgtoollogs/dbca/$ORACLE_SID/$ORACLE_SID.log ||
  cat /opt/oracle/cfgtoollogs/dbca/$ORACLE_SID.log
 
+####
 echo "$ORACLE_SID=localhost:1521/$ORACLE_SID" > $ORACLE_HOME/network/admin/tnsnames.ora
 echo "$ORACLE_SID= 
 (DESCRIPTION = 

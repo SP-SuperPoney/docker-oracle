@@ -10,6 +10,7 @@
 # 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
+echo -e "\033[32mstarting bash script $0\033[0m"
 
 # Check that ORACLE_HOME is set
 if [ "$ORACLE_HOME" == "" ]; then
