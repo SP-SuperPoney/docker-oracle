@@ -151,7 +151,7 @@ fi;
 export ORACLE_CHARACTERSET=${ORACLE_CHARACTERSET:-AL32UTF8}
 
 # Default for DBCONTROL (true|false)
-export DBCONTROL=${DBCONTROL:-true}
+export DBCONTROL=${DBCONTROL:-false}
 
 # Check whether database already exists
 if [ -d $ORACLE_BASE/oradata/$ORACLE_SID ]; then
@@ -182,6 +182,13 @@ else
   # Execute custom provided setup scripts
   $ORACLE_BASE/$USER_SCRIPTS_FILE $ORACLE_BASE/scripts/setup
 fi;
+
+# (re)start EM Database Console
+if [ $DBCONTROL == "true" ]; then
+   emctl stop dbconsole
+   kill `ps -ef | grep emagent | awk '{print $2}'`
+   emctl start dbconsole
+fi
 
 # Check whether database is up and running
 $ORACLE_BASE/$CHECK_DB_FILE

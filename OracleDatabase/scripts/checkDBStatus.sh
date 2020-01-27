@@ -15,6 +15,9 @@ echo -e "\033[32mstarting bash script $0\033[0m"
 
 POSITIVE_RETURN="OPEN"
 ORACLE_SID="`grep $ORACLE_HOME /etc/oratab | cut -d: -f1`"
+export ORACLE_SID=$ORACLE_SID
+ORAENV_ASK=NO
+export ORAENV_ASK=NO
 source oraenv
 
 # Check Oracle DB status and store it in status

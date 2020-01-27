@@ -15,7 +15,7 @@ echo -e "\033[32mstarting bash script $0\033[0m"
 # Adjust file permissions, go to /opt/oracle as user 'oracle' to proceed with Oracle installation
 # ------------------------------------------------------------
 mkdir -p $ORACLE_BASE/scripts/setup && \
-mkdir $ORACLE_BASE/scripts/startup && \
+mkdir -p $ORACLE_BASE/scripts/startup && \
 ln -s $ORACLE_BASE/scripts /docker-entrypoint-initdb.d && \
 mkdir $ORACLE_BASE/oradata && \
 mkdir -p $ORACLE_HOME && \

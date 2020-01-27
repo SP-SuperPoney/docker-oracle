@@ -16,10 +16,11 @@ set -e
 
 # Check whether ORACLE_SID is passed on
 export ORACLE_SID=${1:-ORCL}
+echo "ORACLE_SID=$ORACLE_SID"
 
 # Auto generate ORACLE PWD if not passed on
 export ORACLE_PWD=${3:-"`openssl rand -base64 8`1"}
-echo -e "\033[0;31mORACLE PASSWORD FOR SYS, SYSTEM :\033[0m $ORACLE_PWD";
+echo -e "ORACLE PASSWORD FOR SYS, SYSTEM : \033[0;31m$ORACLE_PWD\033[0m";
 
 # If there is greater than 8 CPUs default back to dbca memory calculations
 # dbca will automatically pick 40% of available memory for Oracle DB
@@ -49,6 +50,7 @@ DEDICATED_THROUGH_BROKER_LISTENER=ON
 DIAG_ADR_ENABLED = off
 " > $ORACLE_HOME/network/admin/listener.ora
 
+echo "DBCONTROL=$DBCONTROL"
 if [ $DBCONTROL == "true" ]; then
   EM_CONFIGURATION=LOCAL
 else
@@ -64,10 +66,7 @@ fi
 
 # Start LISTENER and run DBCA
 lsnrctl start &&
-dbca -silent -createDatabase -templateName General_Purpose.dbc -gdbname ${SERVICE_NAME} -sid ${ORACLE_SID} \
-     -responseFile NO_VALUE -characterSet $ORACLE_CHARACTERSET $DBCA_TOTAL_MEMORY \
-     -emConfiguration ${EM_CONFIGURATION} -dbsnmpPassword ${ORACLE_PWD} -sysmanPassword ${ORACLE_PWD} \
-     -sysPassword ${ORACLE_PWD} -systemPassword ${ORACLE_PWD} -initparams java_jit_enabled=FALSE,audit_trail=NONE,audit_sys_operations=FALSE ||
+dbca -silent -createDatabase -templateName General_Purpose.dbc -gdbname ${ORACLE_SID} -sid ${ORACLE_SID} -responseFile NO_VALUE -characterSet $ORACLE_CHARACTERSET $DBCA_TOTAL_MEMORY -emConfiguration ${EM_CONFIGURATION} -dbsnmpPassword ${ORACLE_PWD} -sysmanPassword ${ORACLE_PWD} -sysPassword ${ORACLE_PWD} -systemPassword ${ORACLE_PWD} -initparams java_jit_enabled=FALSE,audit_trail=NONE,audit_sys_operations=FALSE ||
  cat /opt/oracle/cfgtoollogs/dbca/$ORACLE_SID/$ORACLE_SID.log ||
  cat /opt/oracle/cfgtoollogs/dbca/$ORACLE_SID.log
 
@@ -90,4 +89,4 @@ sqlplus / as sysdba << EOF
 EOF
 
 # Remove temporary response file
-rm $ORACLE_BASE/dbca.rsp
+#rm $ORACLE_BASE/dbca.rsp

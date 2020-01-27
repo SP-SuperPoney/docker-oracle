@@ -134,7 +134,7 @@ echo ""
 
 cat << EOF
   Oracle Database Docker Image for '$EDITION' version $VERSION is ready to be extended: 
-    
+
     --> $IMAGE_NAME
 
   Build completed in $BUILD_ELAPSED seconds.

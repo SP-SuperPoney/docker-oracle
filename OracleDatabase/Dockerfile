@@ -46,7 +46,9 @@ ENV ORACLE_BASE=/opt/oracle \
     CHECK_SPACE_FILE="checkSpace.sh" \
     CHECK_DB_FILE="checkDBStatus.sh" \
     USER_SCRIPTS_FILE="runUserScripts.sh" \
-    INSTALL_DB_BINARIES_FILE="installDBBinaries.sh"
+    INSTALL_DB_BINARIES_FILE="installDBBinaries.sh" \
+    ORAENV_ASK=NO \
+    ORACLE_SID=${ORACLE_SID:-ORCL}
 
 # Use second ENV so that variable get substituted
 ENV PATH=$ORACLE_HOME/bin:$ORACLE_HOME/OPatch/:/usr/sbin:$PATH \
@@ -57,6 +59,8 @@ ENV PATH=$ORACLE_HOME/bin:$ORACLE_HOME/OPatch/:/usr/sbin:$PATH \
 # -------------
 COPY ./scripts/$SETUP_LINUX_FILE ./scripts/$CHECK_SPACE_FILE $INSTALL_DIR/
 COPY ./scripts/$RUN_FILE ./scripts/$START_FILE ./scripts/$CREATE_DB_FILE ./assets/$CONFIG_RSP ./scripts/$PWD_FILE ./scripts/$CHECK_DB_FILE ./scripts/$USER_SCRIPTS_FILE $ORACLE_BASE/
+COPY ./scripts/setup/ $ORACLE_BASE/scripts/setup/
+COPY ./scripts/startup/ $ORACLE_BASE/scripts/startup/
 
 RUN chmod ug+x $INSTALL_DIR/*.sh && \
     sync && \
@@ -108,7 +112,8 @@ RUN $ORACLE_BASE/oraInventory/orainstRoot.sh && \
 USER oracle
 WORKDIR /home/oracle
 
-VOLUME ["$ORACLE_BASE/oradata"]
+#Remove volume [https://medium.com/@ggajos/drop-db-startup-time-from-45-to-3-minutes-in-dockerized-oracle-19-3-0-552068593deb]
+#VOLUME ["$ORACLE_BASE/oradata"]
 EXPOSE 1521 1158
 HEALTHCHECK --interval=1m --start-period=5m \
    CMD "$ORACLE_BASE/$CHECK_DB_FILE" >/dev/null || exit 1

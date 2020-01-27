@@ -151,6 +151,29 @@ On the first startup of the container a random password will be generated for th
 The password for those accounts can be changed via the **docker exec** command. **Note**, the container has to be running:
 	docker exec <container name> /opt/oracle/setPassword.sh <your password>
 
+#### Running Oracle Database 11gR2 Standard Edition in a Docker container
+	docker run -d -p 1158:1158/tcp -p 1521:1521/tcp -e ORACLE_PWD=juxta juxta/oracle:11.2.0.4-se
+
+Locate id of the dockerized DB:
+
+	docker ps
+
+Open bash inside DB container:
+
+	docker exec -it 0f4acaaca803 /bin/bash
+
+Start DB terminal:
+
+	sqlplus / as sysdba
+
+Do your configuration tasks inside the container then commit. Example :
+
+	docker commit --author "Eric Clement <eric.clement@juxta.fr>" --message "FSV snapshot" 0f4acaaca803 juxta/oracle:fsv_5.4.0
+
+Run the commited image :
+
+	docker run -d -p 1158:1158 -p 1521:1521 juxta/oracle:fsv_5.4.0
+
 #### Running Oracle Database 11gR2 Express Edition in a Docker container
 To run your Oracle Database Express Edition Docker image use the **docker run** command as follows:
 

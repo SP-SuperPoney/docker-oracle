@@ -9,9 +9,9 @@
             "options": {
                 "cwd": "${workspaceFolder}/OracleDatabase"
             },
-            "command": "pwd && ./buildDockerImage.sh -d",
+            "command": "pwd && ./buildDockerImage.sh",
             "windows": {
-                "command": "bash -c 'pwd && ./buildDockerImage.sh -d'"
+                "command": "bash -c 'pwd && ./buildDockerImage.sh'"
             },
             "group": {
                 "kind": "build",
