@@ -19,7 +19,7 @@ reuse_database(){
 	fi
 	chown oracle:dba /etc/oratab
 	chmod 664 /etc/oratab
-	#provide_data_as_single_volume
+	provide_data_as_single_volume
 	su oracle bash -c "${ORACLE_HOME}/bin/lsnrctl start"
 	su oracle bash -c 'echo startup\; | ${ORACLE_HOME}/bin/sqlplus -s -l / as sysdba'
 }
@@ -138,7 +138,7 @@ prerequisites(){
 create_database(){
 	prerequisites
 	echo "Creating database."
-	#provide_data_as_single_volume
+	provide_data_as_single_volume
 	remove_domain_from_resolve_conf
 	su oracle bash -c "${ORACLE_HOME}/bin/lsnrctl start"
 	if [ $DBCONTROL == "true" ]; then
@@ -162,17 +162,11 @@ create_database(){
 		-systemPassword ${PASS} \
 		-initparams java_jit_enabled=FALSE,audit_trail=NONE,audit_sys_operations=FALSE"
 
-
-	#lsnrctl start &&
-	#dbca -silent -createDatabase -responseFile $ORACLE_BASE/dbca.rsp -emConfiguration LOCAL ||
-	# cat /opt/oracle/cfgtoollogs/dbca/$ORACLE_SID/$ORACLE_SID.log ||
-	# cat /opt/oracle/cfgtoollogs/dbca/$ORACLE_SID.log
-
 	echo "Configure listener."
 	su oracle bash -c 'echo -e "ALTER SYSTEM SET LOCAL_LISTENER='"'"'(ADDRESS = (PROTOCOL = TCP)(HOST = $(hostname))(PORT = 1521))'"'"' SCOPE=BOTH;\n ALTER SYSTEM REGISTER;\n EXIT" | ${ORACLE_HOME}/bin/sqlplus -s -l / as sysdba'
 
-	#echo "Remove second control file"
-	#su oracle bash -c 'echo -e "ALTER SYSTEM SET control_files='"'"'$ORACLE_BASE/oradata/${ORACLE_SID}/control01.ctl'"'"' scope=spfile;\n EXIT" | ${ORACLE_HOME}/bin/sqlplus -s -l / as sysdba'	
+	echo "Remove second control file"
+	su oracle bash -c 'echo -e "ALTER SYSTEM SET control_files='"'"'$ORACLE_BASE/oradata/${ORACLE_SID}/control01.ctl'"'"' scope=spfile;\n EXIT" | ${ORACLE_HOME}/bin/sqlplus -s -l / as sysdba'	
 
 	echo "Applying data patches."
 	su oracle bash -c 'echo -e "@?/rdbms/admin/catbundle.sql PSU APPLY\n EXIT" | ${ORACLE_HOME}/bin/sqlplus -s -l / as sysdba'
@@ -186,7 +180,7 @@ create_database(){
 }
 
 post_create_db(){
-	chown -R oracle:oinstall ${ORACLE_BASE}/admin/oracle/dpdump
+	chown -R oracle:oinstall ${ORACLE_BASE}/admin/${ORACLE_SID^^}/dpdump
 	su oracle -c "/assets/entrypoint_oracle.sh"
 }
 

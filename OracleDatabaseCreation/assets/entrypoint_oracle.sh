@@ -24,9 +24,9 @@ trap_db() {
 }
 
 change_dpdump_dir () {
-	echo_green "Changing dpdump dir to ${ORACLE_BASE}/admin/${ORACLE_SID,,}/dpdump"
+	echo_green "Changing dpdump dir to ${ORACLE_BASE}/admin/${ORACLE_SID^^}/dpdump"
 	sqlplus / as sysdba <<-EOF |
-		create or replace directory data_pump_dir as '${ORACLE_BASE}/admin/${ORACLE_SID,,}/dpdump';
+		create or replace directory data_pump_dir as '${ORACLE_BASE}/admin/${ORACLE_SID^^}/dpdump';
 
 		set linesize 90
 		col owner format a10
@@ -42,7 +42,7 @@ change_dpdump_dir () {
 pre_impdp() {
 	echo_green "Executing pre dump import script..."
 	date "+%F %T"
-	sqlplus / as sysdba @$pre_impdp_script $ORACLE_BASE ${ORACLE_SID,,}
+	sqlplus / as sysdba @$pre_impdp_script $ORACLE_BASE ${ORACLE_SID^^}
 	#while read line; do echo -e "sqlplus_pre_impdp: $line"; done
 }
 
@@ -55,14 +55,14 @@ post_impdp() {
 
 # import dump $DUMPFILE
 import() {
-	echo_green "Download dumpfile ${ORACLE_ASSETS}/${DUMPFILE} to ${ORACLE_BASE}/admin/${ORACLE_SID,,}/dpdump"
-	wget -q --no-check-certificate ${ORACLE_ASSETS}/${DUMPFILE} -O ${ORACLE_BASE}/admin/${ORACLE_SID,,}/dpdump/${DUMPFILE}
+	echo_green "Download dumpfile ${ORACLE_ASSETS}/${DUMPFILE} to ${ORACLE_BASE}/admin/${ORACLE_SID^^}/dpdump"
+	wget -q --no-check-certificate ${ORACLE_ASSETS}/${DUMPFILE} -O ${ORACLE_BASE}/admin/${ORACLE_SID^^}/dpdump/${DUMPFILE}
 
-	if [ -f ${ORACLE_BASE}/admin/${ORACLE_SID,,}/dpdump/${DUMPFILE} ]; then
+	if [ -f ${ORACLE_BASE}/admin/${ORACLE_SID^^}/dpdump/${DUMPFILE} ]; then
 		change_dpdump_dir
 		echo "Import dump ${ORACLE_ASSETS}/${DUMPFILE}..."
 		impdp \"/ as sysdba\" directory=data_pump_dir dumpfile=${DUMPFILE} logfile=$DUMPFILE.$$.log table_exists_action=replace
-		monitor ${ORACLE_BASE}/admin/${ORACLE_SID,,}/dpdump/$DUMPFILE.$$.log log_import &	
+		monitor ${ORACLE_BASE}/admin/${ORACLE_SID^^}/dpdump/$DUMPFILE.$$.log log_import &	
 		MON_IMPDP_PID=$!
 		rm -f ${ORACLE_ASSETS}/${DUMPFILE}
 		echo_green "Dump $DUMPFILE imported."

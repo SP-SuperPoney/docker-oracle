@@ -185,9 +185,13 @@ create_database(){
 	#save_to_volume
 }
 
-post_create_db(){
+entrypoint_impdp(){
 	chown -R oracle:oinstall ${ORACLE_BASE}/admin/oracle/dpdump
-	su oracle -c "/assets/entrypoint_oracle.sh"
+	su oracle -c "/assets/entrypoint_impdp.sh"
+}
+
+entrypoint_patch(){
+	su oracle -c "/assets/runUserScripts.sh"
 }
 
 start_database(){
@@ -197,7 +201,8 @@ start_database(){
 	else
 		set_timezone
 		create_database
-		post_create_db
+		entrypoint_impdp
+		entrypoint_patch
 	fi
 
 	# (re)start EM Database Console
@@ -210,7 +215,9 @@ start_database(){
 	# Successful installation/startup
 	echo ""
 	echo_green "Database ready to use. Enjoy! ;-)"
+}
 
+wait_for_interrupt(){
 	# Tail on alert log
 	echo "The following output is now a tail of the alert.log:"
 	tail -f $ORACLE_BASE/diag/rdbms/*/*/trace/alert*.log &
@@ -234,6 +241,7 @@ case "$1" in
 	'')
 		# default behaviour when no parameters are passed to the container
 		start_database
+		wait_for_interrupt
 		;;
 	*)
 		# use parameters passed to the container

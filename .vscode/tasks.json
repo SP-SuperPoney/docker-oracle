@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build docker base image (oracle/11.2.0.4:base)",
+            "label": "1. Build docker base image (oracle/11.2.0.4:base)",
             "type": "shell",
             "options": {
                 "cwd": "${workspaceFolder}/OracleDatabaseInstall"
@@ -17,20 +17,7 @@
             "problemMatcher": []
         },  
         {
-            "label": "Run docker database creation image (oracle/11.2.0.4:db)",
-            "type": "shell",
-            "options": {
-                "cwd": "${workspaceFolder}/OracleDatabaseCreation"
-            },
-            "command": "pwd && docker run -v oracle:/u01 -it -p 1158:1158 -p 1521:1521 -h oracle --name oracle oracle/11.2.0.4:db",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "Build docker database image (oracle/11.2.0.4:db)",
+            "label": "2. Build docker database image (oracle/11.2.0.4:db)",
             "type": "shell",
             "options": {
                 "cwd": "${workspaceFolder}/OracleDatabaseCreation"
@@ -43,9 +30,32 @@
             "problemMatcher": []
         },
         {
-            "label": "Push image to regisry (oracle/11.2.0.4:db)",
+            "label": "3. Build docker running database image (oracle/11.2.0.4:run)",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/OracleDatabaseRunning"
+            },
+            "command": "pwd && docker build . --tag oracle/11.2.0.4:run",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "4. Push image to regisry (oracle/11.2.0.4:db)",
             "type": "shell",
             "command": "docker tag oracle/11.2.0.4:db localhost:5000/oracle-db && docker push localhost:5000/oracle-db",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },        
+        {
+            "label": "5. Push image to regisry (oracle/11.2.0.4:run)",
+            "type": "shell",
+            "command": "docker tag oracle/11.2.0.4:run localhost:5000/oracle-run && docker push localhost:5000/oracle-run",
             "group": {
                 "kind": "build",
                 "isDefault": true
