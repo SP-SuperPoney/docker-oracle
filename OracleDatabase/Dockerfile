@@ -37,7 +37,6 @@ ENV ORACLE_BASE=/opt/oracle \
     INSTALL_FILE_1="p13390677_112040_Linux-x86-64_1of7.zip" \
     INSTALL_FILE_2="p13390677_112040_Linux-x86-64_2of7.zip" \
     INSTALL_RSP="db_inst.rsp" \
-    CONFIG_RSP="dbca.rsp.tmpl" \
     PWD_FILE="setPassword.sh" \
     RUN_FILE="runOracle.sh" \
     START_FILE="startDB.sh" \
@@ -58,9 +57,7 @@ ENV PATH=$ORACLE_HOME/bin:$ORACLE_HOME/OPatch/:/usr/sbin:$PATH \
 # Copy files needed during both installation and runtime
 # -------------
 COPY ./scripts/$SETUP_LINUX_FILE ./scripts/$CHECK_SPACE_FILE $INSTALL_DIR/
-COPY ./scripts/$RUN_FILE ./scripts/$START_FILE ./scripts/$CREATE_DB_FILE ./assets/$CONFIG_RSP ./scripts/$PWD_FILE ./scripts/$CHECK_DB_FILE ./scripts/$USER_SCRIPTS_FILE $ORACLE_BASE/
-COPY ./scripts/setup/ $ORACLE_BASE/scripts/setup/
-COPY ./scripts/startup/ $ORACLE_BASE/scripts/startup/
+COPY ./scripts/$RUN_FILE ./scripts/$START_FILE ./scripts/$CREATE_DB_FILE ./scripts/$PWD_FILE ./scripts/$CHECK_DB_FILE ./scripts/$USER_SCRIPTS_FILE $ORACLE_BASE/
 
 RUN chmod ug+x $INSTALL_DIR/*.sh && \
     sync && \
