@@ -27,6 +27,7 @@ echo -e "ORACLE PASSWORD FOR SYS, SYSTEM : \033[0;31m$ORACLE_PWD\033[0m";
 # The minimum of 2G is for small environments to guarantee that Oracle has enough memory to function
 # However, bigger environment can and should use more of the available memory
 # This is due to Github Issue #307
+export DBCA_TOTAL_MEMORY=${3:-"-totalMemory 2048"}
 if [ `nproc` -gt 8 ]; then
    DBCA_TOTAL_MEMORY="-totalMemory 2048"
 fi;

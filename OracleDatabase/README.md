@@ -38,14 +38,14 @@ The character set for the database is set during creating of the database. You c
 ### Running Oracle Database in a Docker container
 
 #### Running Oracle Database 11gR2 Standard Edition in a Docker container
-	docker run -d -p 1158:1158/tcp -p 1521:1521/tcp -e ORACLE_PWD=juxta -v ${PWD}\OracleDatabase\scripts\startup:/opt/oracle/scripts/startup -v ${PWD}\OracleDatabase\scripts\setup:/opt/oracle/scripts/setup juxta/oracle:11.2.0.4-se
+	docker run -d -p 1158:1158/tcp -p 1521:1521/tcp -e ORACLE_PWD=juxta juxta/oracle:11.2.0.4-se
 
 Locate id of the dockerized DB:
 
 	docker ps
 
 Wait end of setup optionnaly open bash inside DB container:
-	docker logs -f 0f4acaaca803	
+	docker logs -f 0f4acaaca803
 	docker exec -it 0f4acaaca803 /bin/bash
 
 Start DB terminal:
@@ -54,7 +54,7 @@ Start DB terminal:
 
 Do your configuration tasks inside the container then commit. Example :
 
-	docker commit --author "Eric Clement <eric.clement@juxta.fr>" --message "FSV snapshot" 0f4acaaca803 juxta/oracle:latest
+	docker commit --author "Eric Clement <eric.clement@juxta.fr>" --message "Empty snapshot" 0f4acaaca803 juxta/oracle:latest
 
 Run the commited image :
 
@@ -69,6 +69,10 @@ Sample, With import startup scripts:
 
 With local volume:
 	docker run -d -p 1521:1521 -v /opt/oracle/oradata -v ${PWD}\OracleDatabase\scripts\startup\test:/opt/oracle/scripts/startup juxta/oracle:latest
+
+Push the commited image to our registry:
+	docker tag juxta/oracle jxt-dev-pgsql.juxta.fr:5000/oracle
+	docker push jxt-dev-pgsql.juxta.fr:5000/oracle
 
 #### Running Oracle Database Enterprise and Standard Edition 2 in a Docker container
 To run your Oracle Database Docker image use the **docker run** command as follows:

@@ -47,7 +47,8 @@ ENV ORACLE_BASE=/opt/oracle \
     USER_SCRIPTS_FILE="runUserScripts.sh" \
     INSTALL_DB_BINARIES_FILE="installDBBinaries.sh" \
     ORAENV_ASK=NO \
-    ORACLE_SID=${ORACLE_SID:-ORCL}
+    ORACLE_SID=${ORACLE_SID:-ORCL} \
+    ORACLE_MEMORY=2048
 
 # Use second ENV so that variable get substituted
 ENV PATH=$ORACLE_HOME/bin:$ORACLE_HOME/OPatch/:/usr/sbin:$PATH \

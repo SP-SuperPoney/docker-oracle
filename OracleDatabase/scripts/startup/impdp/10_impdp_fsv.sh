@@ -47,9 +47,9 @@ import() {
 		monitor ${DUMPPATH}/$DUMPFILE.$$.log log_import &	
 		MON_IMPDP_PID=$!
 		rm -f ${DUMPFILE}/${DUMPFILE}
-		echo "Dump file ${DUMPFILE} imported."
+		echo "Dump file \033[32m${DUMPFILE} imported.\033[0m"
 	else
-		echo "Dumpfile ${DUMPPATH}/${DUMPFILE} does not exists !"
+		echo "Dumpfile \033[0;31m${DUMPPATH}/${DUMPFILE} does not exists !\033[0m"
 	fi
 }
 
@@ -62,6 +62,6 @@ if [ -n "$DUMPFILE" ]; then
 	#download
 	import
 else
-	echo "Dumpfile not specified import skipped."
+	echo "\033[0;33mDumpfile not specified import skipped.\033[0m"
 fi
 
