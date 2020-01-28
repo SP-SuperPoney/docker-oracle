@@ -28,6 +28,16 @@
                 "isDefault": true
             },
             "problemMatcher": []
+        },        
+        {
+            "label": "5. Push image to regisry (oracle/11.2.0.4:run)",
+            "type": "shell",
+            "command": "docker tag oracle/11.2.0.4:run localhost:5000/oracle-run && docker push localhost:5000/oracle-run",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
         }
     ]
 }
