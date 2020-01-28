@@ -4,25 +4,15 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "1. Build docker base image (oracle/11.2.0.4:base)",
+            "label": "Build docker image (buildDockerImage.sh)",
             "type": "shell",
             "options": {
-                "cwd": "${workspaceFolder}/OracleDatabaseInstall"
+                "cwd": "${workspaceFolder}/OracleDatabase"
             },
-            "command": "pwd && docker build . --tag oracle/11.2.0.4:base",
-            "group": {
-                "kind": "build",
-                "isDefault": true
+            "command": "pwd && ./buildDockerImage.sh",
+            "windows": {
+                "command": "bash -c 'pwd && ./buildDockerImage.sh'"
             },
-            "problemMatcher": []
-        },  
-        {
-            "label": "2. Build docker database image (oracle/11.2.0.4:db)",
-            "type": "shell",
-            "options": {
-                "cwd": "${workspaceFolder}/OracleDatabaseCreation"
-            },
-            "command": "pwd && docker build . --tag oracle/11.2.0.4:db",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -30,22 +20,9 @@
             "problemMatcher": []
         },
         {
-            "label": "3. Build docker running database image (oracle/11.2.0.4:run)",
+            "label": "Push image to regisry (juxta/oracle)",
             "type": "shell",
-            "options": {
-                "cwd": "${workspaceFolder}/OracleDatabaseRunning"
-            },
-            "command": "pwd && docker build . --tag oracle/11.2.0.4:run",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "4. Push image to regisry (oracle/11.2.0.4:db)",
-            "type": "shell",
-            "command": "docker tag oracle/11.2.0.4:db localhost:5000/oracle-db && docker push localhost:5000/oracle-db",
+            "command": "docker tag juxta/oracle jxt-dev-pgsql:5000/oracle && docker push jxt-dev-pgsql:5000/oracle",
             "group": {
                 "kind": "build",
                 "isDefault": true

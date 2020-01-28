@@ -1,0 +1,3 @@
+PROMPT Post impdp script
+PROMPT Customize to : change passwords, apply patches, ...
+exit;
