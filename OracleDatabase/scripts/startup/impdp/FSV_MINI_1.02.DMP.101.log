@@ -1,5 +1,5 @@
 ;;; 
-Import: Release 11.2.0.4.0 - Production on Tue Jan 28 01:16:50 2020
+Import: Release 11.2.0.4.0 - Production on Tue Jan 28 03:00:38 2020
 
 Copyright (c) 1982, 2011, Oracle and/or its affiliates.  All rights reserved.
 ;;; 
@@ -133,4 +133,4 @@ Processing object type SCHEMA_EXPORT/VIEW/VIEW
 Processing object type SCHEMA_EXPORT/TABLE/CONSTRAINT/REF_CONSTRAINT
 Processing object type SCHEMA_EXPORT/TABLE/TRIGGER
 Processing object type SCHEMA_EXPORT/TABLE/STATISTICS/TABLE_STATISTICS
-Job "SYS"."SYS_IMPORT_FULL_01" successfully completed at Tue Jan 28 01:17:08 2020 elapsed 0 00:00:16
+Job "SYS"."SYS_IMPORT_FULL_01" successfully completed at Tue Jan 28 03:01:03 2020 elapsed 0 00:00:22

@@ -38,7 +38,7 @@ The character set for the database is set during creating of the database. You c
 ### Running Oracle Database in a Docker container
 
 #### Running Oracle Database 11gR2 Standard Edition in a Docker container
-	docker run -d -p 1158:1158/tcp -p 1521:1521/tcp -e ORACLE_PWD=juxta juxta/oracle:11.2.0.4-se
+	docker run -d -p 1158:1158/tcp -p 1521:1521/tcp -e ORACLE_PWD=juxta -v ${PWD}\OracleDatabase\scripts\setup:/opt/oracle/scripts/setup juxta/oracle:11.2.0.4-se
 
 Locate id of the dockerized DB:
 
@@ -56,23 +56,6 @@ Do your configuration tasks inside the container then commit. Example :
 
 	docker commit --author "Eric Clement <eric.clement@juxta.fr>" --message "Empty snapshot" 0f4acaaca803 juxta/oracle:latest
 
-Run the commited image :
-
-Normal:
-	docker run -d -p 1158:1158 -p 1521:1521 juxta/oracle:latest
-
-With startup scripts:
-	docker run -d -p 1521:1521 -v ${PWD}\OracleDatabase\scripts\startup\test:/opt/oracle/scripts/startup juxta/oracle:latest
-
-Sample, With import startup scripts:
-	docker run -d -p 1521:1521 -v ${PWD}\OracleDatabase\scripts\startup\impdp:/opt/oracle/scripts/startup juxta/oracle
-
-With local volume:
-	docker run -d -p 1521:1521 -v /opt/oracle/oradata -v ${PWD}\OracleDatabase\scripts\startup\test:/opt/oracle/scripts/startup juxta/oracle:latest
-
-Push the commited image to our registry:
-	docker tag juxta/oracle jxt-dev-pgsql.juxta.fr:5000/oracle
-	docker push jxt-dev-pgsql.juxta.fr:5000/oracle
 
 #### Running Oracle Database Enterprise and Standard Edition 2 in a Docker container
 To run your Oracle Database Docker image use the **docker run** command as follows:
@@ -88,9 +71,7 @@ To run your Oracle Database Docker image use the **docker run** command as follo
 	Parameters:
 	   --name:        The name of the container (default: auto generated)
 	   -p:            The port mapping of the host port to the container port. 
-	                  Two ports are exposed: 1521 (Oracle Listener), 5500 (OEM Express)
-	   -e ORACLE_SID: The Oracle Database SID that should be used (default: ORCLCDB)
-	   -e ORACLE_PWD: The Oracle Database SYS, SYSTEM and PDB_ADMIN password (default: auto generated)
+	                  Two ports are exposed: 1521 (Oracle Listener), 1158 (Enterprise Manager)
 	   -e ORACLE_CHARACTERSET:
 	                  The character set to use when creating the database (default: AL32UTF8)
 	   -v /opt/oracle/oradata
@@ -103,6 +84,24 @@ To run your Oracle Database Docker image use the **docker run** command as follo
 	   -v /opt/oracle/scripts/setup | ./scripts/setup
 	                  Optional: A volume with custom scripts to be run after database setup.
 	                  For further details see the "Running scripts after setup and on startup" section below.
+
+Example, minimal container:
+	docker run -d -p 1158:1158 -p 1521:1521 juxta/oracle:latest
+
+With startup scripts:
+	docker run -d -p 1521:1521 -v ${PWD}\OracleDatabase\scripts\startup\test:/opt/oracle/scripts/startup juxta/oracle:latest
+
+With import startup scripts:
+	docker run -d -p 1521:1521 -v ${PWD}\OracleDatabase\scripts\startup\impdp:/opt/oracle/scripts/startup juxta/oracle
+
+With local volume:
+	docker run -d -p 1521:1521 -v /opt/oracle/oradata -v ${PWD}\OracleDatabase\scripts\startup\test:/opt/oracle/scripts/startup juxta/oracle:latest
+
+#### Push the commited image to our registry
+
+Push the commited image to JUXTA's repository:
+	docker tag juxta/oracle jxt-dev-pgsql.juxta.fr:5000/oracle
+	docker push jxt-dev-pgsql.juxta.fr:5000/oracle
 
 Once the container has been started and the database created you can connect to it just like to any other database:
 
@@ -138,26 +137,10 @@ SQL scripts will be executed as sysdba, shell scripts will be executed as the cu
 recommended to prefix your scripts with a number. For example `01_users.sql`, `02_permissions.sql`, etc.
 
 **Note:** The startup scripts will also be executed after the first time database setup is complete.  
-**Note:** Use `/u01/app/oracle/scripts/` instead of `/opt/oracle/scripts/` for Express Edition.  
 
 The example below mounts the local directory myScripts to `/opt/oracle/myScripts` which is then searched for custom startup scripts:
 
-    docker run --name oracle-ee -p 1521:1521 -v /home/oracle/myScripts:/opt/oracle/scripts/startup -v /home/oracle/oradata:/opt/oracle/oradata juxta/oracle
+    docker run --name oracle-se -p 1521:1521 -v /home/oracle/myScripts:/opt/oracle/scripts/startup -v /home/oracle/oradata:/opt/oracle/oradata juxta/oracle
     
 ## Known issues
 * The [`overlay` storage driver](https://docs.docker.com/engine/userguide/storagedriver/selectadriver/) on CentOS has proven to run into Docker bug #25409. We recommend using `btrfs` or `overlay2` instead. For more details see issue #317.
-
-## Frequently asked questions
-Please see [FAQ.md](./FAQ.md) for frequently asked questions.
-
-## Support
-Oracle Database in single instance configuration is supported for Oracle Linux 7 and Red Hat Enterprise Linux (RHEL) 7.
-For more details please see My Oracle Support note: **Oracle Support for Database Running on Docker (Doc ID 2216342.1)**
-
-## License
-To download and run Oracle Database, regardless whether inside or outside a Docker container, you must download the binaries from the Oracle website and accept the license indicated at that page.
-
-All scripts and files hosted in this project and GitHub [docker-images/OracleDatabase](./) repository required to build the Docker images are, unless otherwise noted, released under [UPL 1.0](https://oss.oracle.com/licenses/upl/) license.
-
-## Copyright
-Copyright (c) 2014-2019 Oracle and/or its affiliates. All rights reserved.

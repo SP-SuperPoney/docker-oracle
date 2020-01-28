@@ -27,14 +27,14 @@ if [ -d "$SCRIPTS_ROOT" ] && [ -n "$(ls -A $SCRIPTS_ROOT)" ]; then
 
   for f in $SCRIPTS_ROOT/*; do
       case "$f" in
-          *.sh)     echo "$0: \033[32mrunning\033[0m $f"; . "$f" ;;
-          *.sql)    echo "$0: \033[32mrunning\033[0m $f"; echo "exit" | $ORACLE_HOME/bin/sqlplus -s "/ as sysdba" @"$f"; echo ;;
-          *)        echo "$0: \033[0;33mignoring\033[0m $f" ;;
+          *.sh)     echo -e "$0: \033[32mrunning\033[0m $f"; . "$f" ;;
+          *.sql)    echo -e "$0: \033[32mrunning\033[0m $f"; echo "exit" | $ORACLE_HOME/bin/sqlplus -s "/ as sysdba" @"$f"; echo ;;
+          *)        echo -e "$0: \033[0;33mignoring\033[0m $f" ;;
       esac
       echo "";
   done
   
-  echo "\033[32mDONE\033[0m: Executing user defined scripts"
+  echo -e "\033[32mDONE\033[0m: Executing user defined scripts"
   echo "";
 
 fi;
