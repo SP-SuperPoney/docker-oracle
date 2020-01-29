@@ -59,7 +59,7 @@ fi
 
 # Start LISTENER and run DBCA
 lsnrctl start &&
-dbca -silent -createDatabase -templateName General_Purpose.dbc -gdbname ${ORACLE_SID} -sid ${ORACLE_SID} -responseFile NO_VALUE -characterSet $ORACLE_CHARACTERSET $DBCA_TOTAL_MEMORY -emConfiguration ${EM_CONFIGURATION} -dbsnmpPassword ${ORACLE_PWD} -sysmanPassword ${ORACLE_PWD} -sysPassword ${ORACLE_PWD} -systemPassword ${ORACLE_PWD} -initparams java_jit_enabled=FALSE,audit_trail=NONE,audit_sys_operations=FALSE ||
+dbca -silent -createDatabase -templateName General_Purpose.dbc -gdbname ${ORACLE_SID} -sid ${ORACLE_SID} -responseFile NO_VALUE -characterSet $ORACLE_CHARACTERSET $DBCA_TOTAL_MEMORY -emConfiguration ${EM_CONFIGURATION} -dbsnmpPassword ${ORACLE_PWD} -sysmanPassword ${ORACLE_PWD} -sysPassword ${ORACLE_PWD} -systemPassword ${ORACLE_PWD} -initparams java_jit_enabled=FALSE,audit_trail=NONE,audit_sys_operations=FALSE,nls_language="FRENCH",nls_territory="FRANCE",processes=300,sessions=335 -sampleSchema false||
  cat /opt/oracle/cfgtoollogs/dbca/$ORACLE_SID/$ORACLE_SID.log ||
  cat /opt/oracle/cfgtoollogs/dbca/$ORACLE_SID.log
 
