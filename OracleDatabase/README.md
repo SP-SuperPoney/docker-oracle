@@ -73,7 +73,7 @@ To run your Oracle Database Docker image use the **docker run** command as follo
 	   -p:            The port mapping of the host port to the container port. 
 	                  Two ports are exposed: 1521 (Oracle Listener), 1158 (Enterprise Manager)
 	   -e ORACLE_CHARACTERSET:
-	                  The character set to use when creating the database (default: AL32UTF8)
+	                  The character set to use when creating the database (default: WE8MSWIN1252)
 	   -v /opt/oracle/oradata
 	                  The data volume to use for the database.
 	                  Has to be writable by the Unix "oracle" (uid: 54321) user inside the container!
@@ -96,6 +96,9 @@ With import startup scripts:
 
 With local volume:
 	docker run -d -p 1521:1521 -v /opt/oracle/oradata -v ${PWD}\OracleDatabase\scripts\startup\test:/opt/oracle/scripts/startup juxta/oracle:latest
+
+**NOTE**: mount network share as volume. IE:
+	sudo mount -t cifs -o username=erc,domain=JUXTA,vers=2.0 //dev-porterc01.juxta.fr/PUBLIC /mnt/dev-porterc01
 
 #### Push the commited image to our registry
 

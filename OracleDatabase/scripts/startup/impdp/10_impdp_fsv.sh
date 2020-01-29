@@ -43,10 +43,8 @@ import() {
 	if [ -f ${DUMPPATH}/${DUMPFILE} ]; then
 		change_dpdump_dir
 		echo "Import dump ${DUMPPATH}/${DUMPFILE}..."
-		impdp \"/ as sysdba\" directory=data_pump_dir dumpfile=${DUMPFILE} logfile=$DUMPFILE.$$.log table_exists_action=replace
-		monitor ${DUMPPATH}/$DUMPFILE.$$.log log_import &	
-		MON_IMPDP_PID=$!
-		rm -f ${DUMPFILE}/${DUMPFILE}
+		impdp \"/ as sysdba\" directory=data_pump_dir dumpfile=${DUMPFILE} NOLOGFILE=YES
+		#rm -f ${DUMPFILE}/${DUMPFILE}
 		echo -e "Dump file \033[32m${DUMPFILE} imported.\033[0m"
 	else
 		echo -e "Dumpfile \033[0;31m${DUMPPATH}/${DUMPFILE} does not exists !\033[0m"

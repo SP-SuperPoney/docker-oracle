@@ -25,7 +25,7 @@ function runContainerTest {
   IMAGE="$3"
   ORACLE_SID=${4:-ORCLTEST}
   ORACLE_PDB=${5:-ORCLPDBTEST}
-  ORACLE_CHARACTERSET=${6:-AL32UTF8}
+  ORACLE_CHARACTERSET=${6:-WE8MSWIN1252}
 
   echo "Test: $TEST_NAME"
   echo ""
