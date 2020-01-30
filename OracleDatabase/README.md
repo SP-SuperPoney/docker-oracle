@@ -38,6 +38,7 @@ The character set for the database is set during creating of the database. You c
 ### Running Oracle Database in a Docker container
 
 #### Running Oracle Database 11gR2 Standard Edition in a Docker container
+
 	docker run -d -p 1158:1158/tcp -p 1521:1521/tcp -e ORACLE_PWD=juxta -v ${PWD}\OracleDatabase\scripts\setup:/opt/oracle/scripts/setup juxta/oracle:11.2.0.4-se
 
 Locate id of the dockerized DB:
@@ -56,6 +57,10 @@ Do your configuration tasks inside the container then commit. Example :
 
 	docker commit --author "Eric Clement <eric.clement@juxta.fr>" --message "Empty snapshot" 0f4acaaca803 juxta/oracle:latest
 
+#### Push the commited image to JUXTA's repository:
+
+	docker tag juxta/oracle jxt-dev-pgsql.juxta.fr:5000/oracle
+	docker push jxt-dev-pgsql.juxta.fr:5000/oracle
 
 #### Running Oracle Database Enterprise and Standard Edition 2 in a Docker container
 To run your Oracle Database Docker image use the **docker run** command as follows:
@@ -86,32 +91,38 @@ To run your Oracle Database Docker image use the **docker run** command as follo
 	                  For further details see the "Running scripts after setup and on startup" section below.
 
 Example, minimal container:
+
 	docker run -d -p 1158:1158 -p 1521:1521 juxta/oracle:latest
 
 With startup scripts:
+
 	docker run -d -p 1521:1521 -v ${PWD}\OracleDatabase\scripts\startup\test:/opt/oracle/scripts/startup juxta/oracle:latest
 
 With import startup scripts:
+
 	docker run -d -p 1521:1521 -v ${PWD}\OracleDatabase\scripts\startup\impdp:/opt/oracle/scripts/startup juxta/oracle
 
 With local volume:
+
 	docker run -d -p 1521:1521 -v /opt/oracle/oradata -v ${PWD}\OracleDatabase\scripts\startup\test:/opt/oracle/scripts/startup juxta/oracle:latest
-
-**NOTE**: mount network share as volume. IE:
-	sudo mount -t cifs -o username=erc,domain=JUXTA,vers=2.0 //dev-porterc01.juxta.fr/PUBLIC /mnt/dev-porterc01
-
-#### Push the commited image to our registry
-
-Push the commited image to JUXTA's repository:
-	docker tag juxta/oracle jxt-dev-pgsql.juxta.fr:5000/oracle
-	docker push jxt-dev-pgsql.juxta.fr:5000/oracle
 
 Once the container has been started and the database created you can connect to it just like to any other database:
 
 	sqlplus / as sysdba
 	sqlplus sys/<your password>@//localhost:1521/<your SID> as sysdba
 
-The Oracle Database inside the container also has Oracle Enterprise Manager Express configured. To access OEM Express, start your browser and follow the URL:
+**NOTE**: Mount network share as volume :
+
+	sudo mount -t cifs -o username=erc,domain=JUXTA,vers=2.0 //JUXTASTOCKAGE.juxta.fr/juxta/Developpement/OracleCI/impdp /mnt/OracleCI
+
+Use [autofs](https://help.ubuntu.com/community/Autofs) tool to automatically mount a share, even if disconnectedprevioulsy  from the network.
+
+	sudo apt-get install autofs
+
+
+## Enterprise Manager (EM)
+
+The Oracle Database inside the container also has Oracle Enterprise Manager Express configured. ```DB_CONTROL``` must be set to ```true``` whil building the base image. To access OEM Express, start your browser and follow the URL:
 
 	https://localhost:1158/em/
 
