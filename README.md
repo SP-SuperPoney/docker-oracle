@@ -5,12 +5,14 @@ Sample Docker build files to facilitate installation, configuration, and environ
 This project offers sample Dockerfiles for:
  * Oracle Database 11g Release 2 (11.2.0.4) Standard Edition.
 
-To assist in building the images, you can use the [buildDockerImage.sh](dockerfiles/buildDockerImage.sh) script. See below for instructions and usage.
+Use the `build.sh` script to build and push your image.
 
-The `buildDockerImage.sh` script is just a utility shell script that performs MD5 checks and is an easy way for beginners to get started. Expert users are welcome to directly call `docker build` with their prefered set of parameters.
+To assist in building custom images, you can use the [buildDockerImage.sh](dockerfiles/buildDockerImage.sh) script. See below for instructions and usage.
+
+The `buildDockerImage.sh` script is just a utility shell script that is an easy way for beginners to get started. Expert users are welcome to directly call `docker build` with their prefered set of parameters.
 
 ### Building Oracle Database Docker Install Images
-**IMPORTANT:** You will have to provide the installation binaries of Oracle Database and put them into the `dockerfiles/<version>` folder. You only need to provide the binaries for the edition you are going to install. The binaries can be downloaded from the [Oracle Technology Network](http://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html), make sure you use the linux link: *Linux x86-64*. The needed file is named *linuxx64_<version>_database.zip*. You also have to make sure to have internet connectivity for yum. Note that you must not uncompress the binaries. The script will handle that for you and fail if you uncompress them manually!
+**IMPORTANT:** You will have to provide the installation binaries of Oracle Database and put them into the root folder. You only need to provide the binaries for the edition you are going to install. The binaries can be downloaded from the [Oracle Technology Network](http://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html), make sure you use the linux link: *Linux x86-64*. The needed file is named *linuxx64_<version>_database.zip*. You also have to make sure to have internet connectivity for yum. Note that you must not uncompress the binaries. The script will handle that for you and fail if you uncompress them manually!
 
 Before you build the image make sure that you have provided the installation binaries and put them into the right folder. Once you have chosen which edition and version you want to build an image of, go into the **dockerfiles** folder and run the **buildDockerImage.sh** script:
 
@@ -114,7 +116,7 @@ With volume:
 Once the container has been started and the database created you can connect to it just like to any other database (port 1521 must be exposed):
 
 	sqlplus sys/<your password>@//<server>:1521/<your SID> as sysdba
-	sqlplus sys/juxta@//jxt-dev-pgsql.juxta.fr:1521/orcl as sysdba
+	sqlplus sys/juxta@//jxt-dev-pgsql.juxta.fr/orcl as sysdba
 
 
 **NOTE**: Mount network share as volume. Oracle user and group id are ```uid=54321,gid=54321``` :
