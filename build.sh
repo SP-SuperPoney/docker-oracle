@@ -40,4 +40,4 @@ BUILD_ELAPSED=`expr $BUILD_END - $BUILD_START`
 echo ""
 echo "Build completed in $BUILD_ELAPSED seconds."
 
-
+exit 0

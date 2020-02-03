@@ -4,7 +4,6 @@ set -e
 
 export ORACLE_SID=${ORACLE_SID}
 LOCAL_SCRIPT_ROOT="/opt/oracle/scripts/startup"
-DUMPFILE="FSV_MINI_1.02.DMP"
 
 alert_log="$ORACLE_BASE/diag/rdbms/orcl/$ORACLE_SID/trace/alert_$ORACLE_SID.log"
 listener_log="$ORACLE_BASE/diag/tnslsnr/$HOSTNAME/listener/trace/listener.log"
@@ -44,14 +43,14 @@ download() {
 # import dump $DUMPFILE
 import() {
     DUMPFILE=$1
-	if [ -f ${LOCAL_SCRIPT_ROOT}/${DUMPFILE} ]; then
+	if [ -f ${DUMPFILE} ]; then
 		change_dpdump_dir
-		echo "Import dump ${LOCAL_SCRIPT_ROOT}/${DUMPFILE}..."
-		impdp \"/ as sysdba\" directory=data_pump_dir dumpfile=${DUMPFILE} NOLOGFILE=YES
-		rm -f ${DUMPFILE}/${DUMPFILE}
-		echo -e "Dump file \033[32m${DUMPFILE} imported.\033[0m"
+		echo "Import dump `basename ${DUMPFILE}`..."
+		impdp \"/ as sysdba\" directory=data_pump_dir dumpfile=`basename ${DUMPFILE}` NOLOGFILE=YES
+		rm -f ${DUMPFILE}
+		echo -e "Dump file \033[32m`basename ${DUMPFILE}` imported.\033[0m"
 	else
-		echo -e "Dumpfile \033[0;31m${LOCAL_SCRIPT_ROOT}/${DUMPFILE} does not exists !\033[0m"
+		echo -e "Dumpfile \033[0;31m${DUMPFILE} does not exists !\033[0m"
 	fi
 }
 
@@ -59,6 +58,7 @@ import() {
 #Note : you can call "download" if dumpfile is located elsewere...
 #download
 
+cd ${LOCAL_SCRIPT_ROOT}
 # Execute custom provided files (only if directory exists and has files in it)
 if [ -d "$LOCAL_SCRIPT_ROOT" ] && [ -n "$(ls -A $LOCAL_SCRIPT_ROOT)" ]; then
 
@@ -71,10 +71,11 @@ if [ -d "$LOCAL_SCRIPT_ROOT" ] && [ -n "$(ls -A $LOCAL_SCRIPT_ROOT)" ]; then
       echo "";
   done
 
-  for f in $LOCAL_SCRIPT_ROOT/*.; do
+  echo "Checking for dump files"
+  for f in $LOCAL_SCRIPT_ROOT/*; do
       shopt -s nocasematch
       case "$f" in
-          *.DMP)    echo -e "$0: \033[32mrunning\033[0m $f"; import "$f"; echo ;;
+          *.dmp)    echo -e "$0: \033[32mimporting\033[0m $f"; import "$f"; echo ;;
           *)        echo -e "$0: \033[0;33mignoring\033[0m $f" ;;
       esac
       echo "";
@@ -84,5 +85,4 @@ fi;
 
 echo -e "\033[32mDONE\033[0m: $0"
 echo "";
-exit 0
 
