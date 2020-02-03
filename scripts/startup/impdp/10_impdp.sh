@@ -3,6 +3,9 @@ echo -e "\033[32mstarting bash script $0\033[0m"
 set -e
 
 export ORACLE_SID=${ORACLE_SID}
+LOCAL_SCRIPT_ROOT="/opt/oracle/scripts/startup"
+DUMPFILE="FSV_MINI_1.02.DMP"
+
 alert_log="$ORACLE_BASE/diag/rdbms/orcl/$ORACLE_SID/trace/alert_$ORACLE_SID.log"
 listener_log="$ORACLE_BASE/diag/tnslsnr/$HOSTNAME/listener/trace/listener.log"
 pfile=$ORACLE_HOME/dbs/init$ORACLE_SID.ora
@@ -18,9 +21,9 @@ trap_db() {
 }
 
 change_dpdump_dir () {
-	echo "Changing dpdump dir to ${DUMPPATH}"
+	echo "Changing dpdump dir to ${LOCAL_SCRIPT_ROOT}"
 	sqlplus / as sysdba <<-EOF |
-		create or replace directory data_pump_dir as '${DUMPPATH}';
+		create or replace directory data_pump_dir as '${LOCAL_SCRIPT_ROOT}';
 
 		set linesize 90
 		col owner format a10
@@ -34,79 +37,52 @@ change_dpdump_dir () {
 }
 
 download() {
-	echo "Download dumpfile ${ASSETS_LOCATION}/${DUMPFILE} to ${DUMPPATH}/"
-	wget -q --no-check-certificate ${ASSETS_LOCATION}/${DUMPFILE} -O ${DUMPPATH}/${DUMPFILE}
+	echo "Download dumpfile ${ASSETS_LOCATION}/ to ${LOCAL_SCRIPT_ROOT}/"
+	wget -q --no-check-certificate ${ASSETS_LOCATION}/ -O ${LOCAL_SCRIPT_ROOT}/${DUMPFILE}
 }
 
 # import dump $DUMPFILE
 import() {
-	if [ -f ${DUMPPATH}/${DUMPFILE} ]; then
+    DUMPFILE=$1
+	if [ -f ${LOCAL_SCRIPT_ROOT}/${DUMPFILE} ]; then
 		change_dpdump_dir
-		echo "Import dump ${DUMPPATH}/${DUMPFILE}..."
+		echo "Import dump ${LOCAL_SCRIPT_ROOT}/${DUMPFILE}..."
 		impdp \"/ as sysdba\" directory=data_pump_dir dumpfile=${DUMPFILE} NOLOGFILE=YES
-		#rm -f ${DUMPFILE}/${DUMPFILE}
+		rm -f ${DUMPFILE}/${DUMPFILE}
 		echo -e "Dump file \033[32m${DUMPFILE} imported.\033[0m"
 	else
-		echo -e "Dumpfile \033[0;31m${DUMPPATH}/${DUMPFILE} does not exists !\033[0m"
+		echo -e "Dumpfile \033[0;31m${LOCAL_SCRIPT_ROOT}/${DUMPFILE} does not exists !\033[0m"
 	fi
 }
 
 #main
-DUMPPATH="/opt/oracle/scripts/startup"
-DUMPFILE="FSV_MINI_1.02.DMP"
-
-if [ -n "$DUMPFILE" ]; then
-	#Sample: you can call "download" if dumpfile is located elsewere...
-	#download
-	import
-else
-	echo -e "\033[0;33mDumpfile not specified import skipped.\033[0m"
-fi
-
-
+#Note : you can call "download" if dumpfile is located elsewere...
+#download
 
 # Execute custom provided files (only if directory exists and has files in it)
 if [ -d "$LOCAL_SCRIPT_ROOT" ] && [ -n "$(ls -A $LOCAL_SCRIPT_ROOT)" ]; then
 
-  echo_green "Checking for zipped files"
+  echo "Checking for zipped files"
   for f in $LOCAL_SCRIPT_ROOT/*; do
       shopt -s nocasematch
       case "$f" in
-          *.zip)    echo "$0: unzip $f"; unzip -Coj $f "*.sql"; rm -rf $f; echo ;;
+          *.zip)    echo "$0: unzip $f"; unzip -Coj $f; echo ;;
       esac
       echo "";
   done
 
-  echo_green "";
-  echo_green "Executing user defined scripts"
-  for f in $LOCAL_SCRIPT_ROOT/*; do
+  for f in $LOCAL_SCRIPT_ROOT/*.; do
+      shopt -s nocasematch
       case "$f" in
-          *.sh)     echo "$0: running $f"; . "$f" ;;
-          *.sql)    echo "$0: running $f"; sqlplus_on_behalf "${f}";echo ;;
-          *)        echo "$0: ignoring $f" ;;
-      esac
-      echo "";
-  done
-  
-  echo "DONE: Executing user defined scripts"
-  echo "";
-
-fi;
-
-
-# Execute custom provided files (only if directory exists and has files in it)
-if [ -d "$DUMPPATH" ] && [ -n "$(ls -A $DUMPPATH)" ]; then
-
-  for f in $DUMPPATH/*.; do
-      case "$f" in
-          *.dmp)     echo -e "$0: \033[32mrunning\033[0m $f"; . "$f" ;;
-          *.DMP)    echo -e "$0: \033[32mrunning\033[0m $f"; echo "exit" | $ORACLE_HOME/bin/sqlplus -s "/ as sysdba" @"$f"; echo ;;
+          *.DMP)    echo -e "$0: \033[32mrunning\033[0m $f"; import "$f"; echo ;;
           *)        echo -e "$0: \033[0;33mignoring\033[0m $f" ;;
       esac
       echo "";
   done
-  
-  echo -e "\033[32mDONE\033[0m: Executing user defined scripts"
-  echo "";
 
 fi;
+
+echo -e "\033[32mDONE\033[0m: $0"
+echo "";
+exit 0
+
