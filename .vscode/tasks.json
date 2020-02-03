@@ -4,11 +4,21 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Build and push docker image (build.sh)",
+            "type": "shell",
+            "command": "pwd && ./build.sh",
+            "windows": {
+                "command": "bash -c 'pwd && ./build.sh'"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Build docker image (buildDockerImage.sh)",
             "type": "shell",
-            "options": {
-                "cwd": "${workspaceFolder}/OracleDatabase"
-            },
             "command": "pwd && ./buildDockerImage.sh",
             "windows": {
                 "command": "bash -c 'pwd && ./buildDockerImage.sh'"
@@ -20,7 +30,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Push image to regisry (juxta/oracle)",
+            "label": "Push image to regisry (jxt-dev-pgsql.juxta.fr:5000/oracle)",
             "type": "shell",
             "command": "docker tag juxta/oracle jxt-dev-pgsql.juxta.fr:5000/oracle && docker push jxt-dev-pgsql.juxta.fr:5000/oracle",
             "group": {

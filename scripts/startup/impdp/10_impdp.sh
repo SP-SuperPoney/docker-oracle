@@ -63,3 +63,50 @@ else
 	echo -e "\033[0;33mDumpfile not specified import skipped.\033[0m"
 fi
 
+
+
+# Execute custom provided files (only if directory exists and has files in it)
+if [ -d "$LOCAL_SCRIPT_ROOT" ] && [ -n "$(ls -A $LOCAL_SCRIPT_ROOT)" ]; then
+
+  echo_green "Checking for zipped files"
+  for f in $LOCAL_SCRIPT_ROOT/*; do
+      shopt -s nocasematch
+      case "$f" in
+          *.zip)    echo "$0: unzip $f"; unzip -Coj $f "*.sql"; rm -rf $f; echo ;;
+      esac
+      echo "";
+  done
+
+  echo_green "";
+  echo_green "Executing user defined scripts"
+  for f in $LOCAL_SCRIPT_ROOT/*; do
+      case "$f" in
+          *.sh)     echo "$0: running $f"; . "$f" ;;
+          *.sql)    echo "$0: running $f"; sqlplus_on_behalf "${f}";echo ;;
+          *)        echo "$0: ignoring $f" ;;
+      esac
+      echo "";
+  done
+  
+  echo "DONE: Executing user defined scripts"
+  echo "";
+
+fi;
+
+
+# Execute custom provided files (only if directory exists and has files in it)
+if [ -d "$DUMPPATH" ] && [ -n "$(ls -A $DUMPPATH)" ]; then
+
+  for f in $DUMPPATH/*.; do
+      case "$f" in
+          *.dmp)     echo -e "$0: \033[32mrunning\033[0m $f"; . "$f" ;;
+          *.DMP)    echo -e "$0: \033[32mrunning\033[0m $f"; echo "exit" | $ORACLE_HOME/bin/sqlplus -s "/ as sysdba" @"$f"; echo ;;
+          *)        echo -e "$0: \033[0;33mignoring\033[0m $f" ;;
+      esac
+      echo "";
+  done
+  
+  echo -e "\033[32mDONE\033[0m: Executing user defined scripts"
+  echo "";
+
+fi;
