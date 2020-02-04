@@ -4,6 +4,8 @@ set serveroutput on size 1000000;
 PROMPT Post impdp script
 PROMPT Customize to : change passwords, apply patches, ...
 
+grant execute on dbms_crypto to public;
+
 PROMPT Compile invalid objects
 DECLARE 
     CURSOR C_OBJ_INVALID IS
