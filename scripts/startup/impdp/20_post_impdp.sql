@@ -29,13 +29,14 @@ BEGIN
           else 
             EXECUTE IMMEDIATE 'alter ' || REC_OBJ.OBJECT_TYPE || ' ' || REC_OBJ.OWNER || '.' || REC_OBJ.OBJECT_NAME || ' compile'; 
           end if;
+          dbms_output.put_line('OK '||REC_OBJ.OBJECT_TYPE||' '||REC_OBJ.OWNER||'.'||REC_OBJ.OBJECT_NAME||' is now valid.');
         EXCEPTION WHEN OTHERS THEN
           v_error := null;
           FOR REC_ERR IN C_OBJ_ERROR(REC_OBJ.OWNER, REC_OBJ.OBJECT_NAME) LOOP
             v_error := v_error||'['||REC_ERR.LINE||'] '||REC_ERR.TEXT;
           END LOOP;
 
-          dbms_output.put_line(to_char(REC_OBJ.LAST_DDL_TIME,'DD/MM/YYYY HH24:MI:SS')||';'||REC_OBJ.OBJECT_TYPE||';'||REC_OBJ.OWNER||';'||REC_OBJ.OBJECT_NAME||';'||v_error);
+          dbms_output.put_line('ERROR '||REC_OBJ.OBJECT_TYPE||' '||REC_OBJ.OWNER||'.'||REC_OBJ.OBJECT_NAME||' is in error '||v_error);
         END;
     END LOOP;
 END;

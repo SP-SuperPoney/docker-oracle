@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-echo -e "\033[32mstarting bash script $0\033[0m"
 set -e
 
 export ORACLE_SID=${ORACLE_SID}
@@ -21,7 +20,7 @@ trap_db() {
 
 change_dpdump_dir () {
 	echo "Changing dpdump dir to ${LOCAL_SCRIPT_ROOT}"
-	sqlplus / as sysdba <<-EOF |
+	sqlplus -s / as sysdba <<-EOF |
 		create or replace directory data_pump_dir as '${LOCAL_SCRIPT_ROOT}';
 
 		set linesize 90
@@ -32,7 +31,7 @@ change_dpdump_dir () {
 
 		exit 0
 	EOF
-	while read line; do echo -e "sqlplus: $line"; done
+	while read line; do echo -e "\033[0;35msqlplus\033[0m: $line"; done
 }
 
 download() {
@@ -44,11 +43,14 @@ download() {
 import() {
     DUMPFILE=$1
 	if [ -f ${DUMPFILE} ]; then
-		change_dpdump_dir
 		echo "Import dump `basename ${DUMPFILE}`..."
-		impdp \"/ as sysdba\" directory=data_pump_dir dumpfile=`basename ${DUMPFILE}` NOLOGFILE=YES
+		echo impdp \"/ as sysdba\" directory=data_pump_dir dumpfile=`basename ${DUMPFILE}` NOLOGFILE=YES
+
+		#todo grep yellow error(s) erreur(s)
+		#echo -e "$0: \033[0;33mignoring\033[0m $f" ;;
+
 		rm -f ${DUMPFILE}
-		echo -e "Dump file \033[32m`basename ${DUMPFILE}` imported.\033[0m"
+		echo -e "Dumpfile \033[32m`basename ${DUMPFILE}` imported.\033[0m"
 	else
 		echo -e "Dumpfile \033[0;31m${DUMPFILE} does not exists !\033[0m"
 	fi
@@ -57,7 +59,7 @@ import() {
 #main
 #Note : you can call "download" if dumpfile is located elsewere...
 #download
-
+change_dpdump_dir
 cd ${LOCAL_SCRIPT_ROOT}
 # Execute custom provided files (only if directory exists and has files in it)
 if [ -d "$LOCAL_SCRIPT_ROOT" ] && [ -n "$(ls -A $LOCAL_SCRIPT_ROOT)" ]; then
@@ -76,7 +78,6 @@ if [ -d "$LOCAL_SCRIPT_ROOT" ] && [ -n "$(ls -A $LOCAL_SCRIPT_ROOT)" ]; then
       shopt -s nocasematch
       case "$f" in
           *.dmp)    echo -e "$0: \033[32mimporting\033[0m $f"; import "$f"; echo ;;
-          *)        echo -e "$0: \033[0;33mignoring\033[0m $f" ;;
       esac
       echo "";
   done
