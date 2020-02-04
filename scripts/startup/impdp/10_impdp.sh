@@ -10,7 +10,7 @@ pfile=$ORACLE_HOME/dbs/init$ORACLE_SID.ora
 
 # monitor $logfile
 monitor() {
-    tail -F -n 0 $1 | while read line; do echo -e "$2: $line"; done
+    tail -F -n 0 $1 | sed --unbuffered -e 's/\(.*erreur.*\)/\o033[31m\1\o033[39m/' | while read line; do echo -e "\033[0;35m$2\033[0m $3: $line"; done
 }
 
 trap_db() {
@@ -43,14 +43,25 @@ download() {
 import() {
     DUMPFILE=$1
 	if [ -f ${DUMPFILE} ]; then
+
+		echo "#########################################################################################"
 		echo "Import dump `basename ${DUMPFILE}`..."
-		echo impdp \"/ as sysdba\" directory=data_pump_dir dumpfile=`basename ${DUMPFILE}` NOLOGFILE=YES
-
-		#todo grep yellow error(s) erreur(s)
-		#echo -e "$0: \033[0;33mignoring\033[0m $f" ;;
-
+		echo "#########################################################################################"
+		echo " "	
+		
+		impdp \"/ as sysdba\" directory=data_pump_dir dumpfile=`basename ${DUMPFILE}` logfile=`basename ${DUMPFILE}`.$$.log table_exists_action=replace >&2 > /dev/null | sed --unbuffered -e 's/\(.*ORA-.*\)/\o033[31m\1\o033[39m/'
+	
+		IMPDP_EXIT_CODE=${?}
+		wait `pidof impdp`
 		rm -f ${DUMPFILE}
-		echo -e "Dumpfile \033[32m`basename ${DUMPFILE}` imported.\033[0m"
+
+		if [ $IMPDP_EXIT_CODE -eq 0 ]
+		then
+			echo -e "Dumpfile \033[32m`basename ${DUMPFILE}` imported.\033[0m"
+		elif [ $IMPDP_EXIT_CODE -eq 1 ] || [ $IMPDP_EXIT_CODE -eq 2 ] || [ $IMPDP_EXIT_CODE -eq 3 ]
+		then
+			echo -e "IMPDP \033[0;31m${DUMPFILE} FAILED !\033[0m"
+		fi
 	else
 		echo -e "Dumpfile \033[0;31m${DUMPFILE} does not exists !\033[0m"
 	fi
