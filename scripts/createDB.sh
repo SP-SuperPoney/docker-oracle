@@ -8,6 +8,7 @@
 # Description: Creates an Oracle Database based on following parameters:
 #              $ORACLE_SID: The Oracle SID name
 #              $ORACLE_PWD: The Oracle password
+#              $ORACLE_MEM: The Oracle total memory
 # 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
@@ -27,11 +28,17 @@ echo -e "ORACLE PASSWORD FOR SYS, SYSTEM : \033[0;31m$ORACLE_PWD\033[0m";
 # The minimum of 2G is for small environments to guarantee that Oracle has enough memory to function
 # However, bigger environment can and should use more of the available memory
 # This is due to Github Issue #307
-export DBCA_TOTAL_MEMORY=${3:-"-totalMemory 2048"}
-if [ `nproc` -gt 8 ]; then
-   DBCA_TOTAL_MEMORY="-totalMemory 2048"
-fi;
 
+if [ `nproc` -gt 8 ]; then
+  DBCA_TOTAL_MEMORY="-totalMemory 2048"
+  echo "Instance memory forced to 2048 Mb, nproc=`nproc`"
+elif [ -z "$3" ]; then
+  DBCA_TOTAL_MEMORY=""
+  echo "Instance memory not defined, set to 2048 Mb"
+else
+  DBCA_TOTAL_MEMORY="-totalMemory $3"
+  echo "Instance memory set to $3 Mb"
+fi;
 
 # Create network related config files (sqlnet.ora, tnsnames.ora, listener.ora)
 mkdir -p $ORACLE_HOME/network/admin

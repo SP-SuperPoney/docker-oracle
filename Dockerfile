@@ -48,7 +48,7 @@ ENV ORACLE_BASE=/opt/oracle \
     INSTALL_DB_BINARIES_FILE="installDBBinaries.sh" \
     ORAENV_ASK=NO \
     ORACLE_SID=${ORACLE_SID:-ORCL} \
-    ORACLE_MEMORY=2048
+    ORACLE_MEM=""
 
 # Use second ENV so that variable get substituted
 ENV PATH=$ORACLE_HOME/bin:$ORACLE_HOME/OPatch/:/usr/sbin:$PATH \
@@ -75,7 +75,8 @@ RUN chmod ug+x $INSTALL_DIR/*.sh && \
 FROM base AS builder
 
 # Install unzip for unzip operation
-RUN yum -y install unzip
+RUN yum -y install oracle-epel-release-el7.x86_64
+RUN yum -y install unzip p7zip.x86_64 
 
 # Copy DB install file
 ADD  ${ASSETS_LOCATION}/$INSTALL_FILE_1 $INSTALL_DIR/

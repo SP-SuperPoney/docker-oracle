@@ -80,6 +80,7 @@ if [ -d "$LOCAL_SCRIPT_ROOT" ] && [ -n "$(ls -A $LOCAL_SCRIPT_ROOT)" ]; then
       shopt -s nocasematch
       case "$f" in
           *.zip)    echo "$0: unzip $f"; unzip -Coj $f; echo ;;
+		  *.7z)     echo "$0: unzip $f"; 7za e $f; echo ;;
       esac
       echo "";
   done
