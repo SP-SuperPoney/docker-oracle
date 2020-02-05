@@ -19,6 +19,8 @@ while [ "$CONTAINER_STATUS" = "" ]
   do CONTAINER_STATUS=`docker logs ${CONTAINER_NAME} 2>&1 | grep 'DATABASE IS READY TO USE!\|DATABASE SETUP WAS NOT SUCCESSFUL!'`
 done
 
+#display docker full logs
+docker logs ${CONTAINER_NAME}
 
 if [ "$CONTAINER_STATUS" = "DATABASE SETUP WAS NOT SUCCESSFUL!" ]
 then
