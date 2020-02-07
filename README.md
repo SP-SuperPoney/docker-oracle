@@ -5,11 +5,11 @@ Sample Docker build files to facilitate installation, configuration, and environ
 This project offers sample Dockerfiles for:
  * Oracle Database 11g Release 2 (11.2.0.4) Standard Edition.
 
-Use the `build.sh` script to build and push your image.
-
 To assist in building custom images, you can use the [buildDockerImage.sh](dockerfiles/buildDockerImage.sh) script. See below for instructions and usage.
 
 The `buildDockerImage.sh` script is just a utility shell script that is an easy way for beginners to get started. Expert users are welcome to directly call `docker build` with their prefered set of parameters.
+
+Use the `build.sh` script to build and push your docker image to our reprository : `jxt-dev-pgsql:5000`.
 
 ### Building Oracle Database Docker Install Images
 **IMPORTANT:** You will have to provide the installation binaries of Oracle Database and put them into the root folder. You only need to provide the binaries for the edition you are going to install. The binaries can be downloaded from the [Oracle Technology Network](http://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html), make sure you use the linux link: *Linux x86-64*. The needed file is named *linuxx64_<version>_database.zip*. You also have to make sure to have internet connectivity for yum. Note that you must not uncompress the binaries. The script will handle that for you and fail if you uncompress them manually!
@@ -95,7 +95,7 @@ To run your Oracle Database Docker image use the **docker run** command as follo
 	                  The character set to use when creating the database (default: WE8MSWIN1252)
 	   -e ORACLE_MEM:
 	                  Instance PGA+SGA memory in MB. If left empty 40% of available memory will be used.
-					  If ```nproc``` is greater than 8, 2408 Mb will be automatically allocated.
+					  If `nproc` is greater than 8, 2408 Mb will be automatically allocated.
 	   -v /opt/oracle/oradata
 	                  The data volume to use for the database.
 	                  Has to be writable by the Unix "oracle" (uid: 54321) user inside the container!
@@ -131,7 +131,7 @@ Once the container has been started and the database created you can connect to 
 	sqlplus sys/juxta@//jxt-dev-pgsql.juxta.fr/orcl as sysdba
 
 
-**NOTE**: Mount network share as volume. Oracle user and group id are ```uid=54321,gid=54321``` :
+**NOTE**: Mount network share as volume. Oracle user and group id are `uid=54321,gid=54321` :
 
 	sudo mount -t cifs -o username=${USER},domain=JUXTA,vers=2.0,uid=54321,gid=54321 //JUXTASTOCKAGE.juxta.fr/juxta/Developpement/OracleCI/impdp /mnt/OracleCI
 
@@ -139,7 +139,7 @@ Use [autofs](https://help.ubuntu.com/community/Autofs) tool to automatically mou
 
 ## Enterprise Manager (EM)
 
-The Oracle Database inside the container also has Oracle Enterprise Manager Express configured. ```DB_CONTROL``` must be set to ```true``` whil building the base image. To access OEM Express, start your browser and follow the URL:
+The Oracle Database inside the container also has Oracle Enterprise Manager Express configured. `DB_CONTROL` must be set to `true` whil building the base image. To access OEM Express, start your browser and follow the URL:
 
 	https://localhost:1158/em/
 

@@ -76,7 +76,8 @@ FROM base AS builder
 
 # Install unzip for unzip operation
 RUN yum -y install oracle-epel-release-el7.x86_64
-RUN yum -y install unzip p7zip.x86_64 
+RUN yum -y install unzip
+RUN yum -y install p7zip.x86_64
 
 # Copy DB install file
 ADD  ${ASSETS_LOCATION}/$INSTALL_FILE_1 $INSTALL_DIR/
@@ -106,7 +107,9 @@ COPY --chown=oracle:oinstall --from=builder $ORACLE_BASE $ORACLE_BASE
 
 USER root
 RUN $ORACLE_BASE/oraInventory/orainstRoot.sh && \
-    $ORACLE_HOME/root.sh
+    $ORACLE_HOME/root.sh && \
+    yum -y install oracle-epel-release-el7.x86_64 && \
+    yum -y install p7zip.x86_64    
 
 USER oracle
 WORKDIR /home/oracle

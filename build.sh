@@ -8,7 +8,8 @@ if [ ! "$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
         docker rm ${CONTAINER_NAME}
     fi
 
-    source buildDockerImage.sh
+    #Uncomment for full build
+    #source buildDockerImage.sh
 
     echo "Running Oracle Database 11gR2 Standard Edition in a Docker container"
     docker run -d --name ${CONTAINER_NAME} -e ORACLE_PWD=juxta -v ${PWD}/scripts/setup:/opt/oracle/scripts/setup juxta/oracle:11.2.0.4-se
@@ -38,9 +39,6 @@ docker tag juxta/oracle jxt-dev-pgsql.juxta.fr:5000/oracle
 docker push jxt-dev-pgsql.juxta.fr:5000/oracle
 
 docker rm -f ${CONTAINER_NAME}
-
-echo "Prune unused images"
-docker image prune -a -f
 
 BUILD_END=$(date '+%s')
 BUILD_ELAPSED=`expr $BUILD_END - $BUILD_START`

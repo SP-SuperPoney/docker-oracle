@@ -125,6 +125,9 @@ else
   yes | docker image prune > /dev/null  
 fi
 
+echo "Push image to regisry (jxt-dev-pgsql.juxta.fr:5000/oracle:$VERSION-$EDITION)"
+docker tag $IMAGE_NAME jxt-dev-pgsql.juxta.fr:5000/oracle:$VERSION-$EDITION
+docker push jxt-dev-pgsql.juxta.fr:5000/oracle:$VERSION-$EDITION
 
 BUILD_END=$(date '+%s')
 BUILD_ELAPSED=`expr $BUILD_END - $BUILD_START`
