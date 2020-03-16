@@ -48,9 +48,7 @@ import() {
 		echo "Import dump `basename ${DUMPFILE}`..."
 		echo "#########################################################################################"
 		echo " "	
-		
-		impdp \"/ as sysdba\" directory=data_pump_dir dumpfile=`basename ${DUMPFILE}` logfile=`basename ${DUMPFILE}`.$$.log table_exists_action=replace >&2 > /dev/null | sed --unbuffered -e 's/\(.*ORA-.*\)/\o033[31m\1\o033[39m/'
-	
+		impdp \"/ as sysdba\" directory=data_pump_dir dumpfile=`basename ${DUMPFILE}` REMAP_TABLESPACE=ODSDATA:DESMOSDATA,ODSINDEX:DESMOSINDEX,TPUDATA:MUNERISDATA,TPUINDEX:MUNERISINDEX logfile=`basename ${DUMPFILE}`.$$.log table_exists_action=replace >&2 > /dev/null | sed --unbuffered -e 's/\(.*ORA-.*\)/\o033[31m\1\o033[39m/'
 		IMPDP_EXIT_CODE=${?}
 		wait `pidof impdp`
 		rm -f ${DUMPFILE}
