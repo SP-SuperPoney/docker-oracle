@@ -9,13 +9,15 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 # 
+echo -e "\033[32mstarting bash script $0\033[0m"
 
 # Make sure Oracle perl binary is in PATH
 PATH=$ORACLE_HOME/perl/bin:$PATH
 
 # Patch database binaries with patch sets
-PATCH_INSTALL_DIR=./patches
+PATCH_INSTALL_DIR=$ORACLE_BASE/scripts/setup/patches
 cd $PATCH_INSTALL_DIR/
+echo "PATCH_INSTALL_DIR=$PATCH_INSTALL_DIR"
 
 #  If exists, install newer OPatch version if present
 if [ -f p6880880*.zip ]; then
@@ -30,6 +32,7 @@ fi;
 
 # Loop over all directories (001, 002, 003, ...)
 for file in `ls -d */`; do
+   echo "Applying patches in $file folder..."
    # Go into sub directory (cd 001)
    cd $file;
    # Unzip the actual patch (unzip pNNNNNNN.zip)
@@ -58,3 +61,5 @@ done;
 cd $HOME
 
 rm -rf $PATCH_INSTALL_DIR
+
+echo -e "\033[32mDONE\033[0m: Executing patch scripts"

@@ -62,15 +62,6 @@ Start DB terminal:
 
 	sqlplus / as sysdba
 
-Do your configuration tasks inside the container then commit. Example :
-
-	docker commit --author "Eric Clement <eric.clement@juxta.fr>" --message "Empty snapshot" 0f4acaaca803 juxta/oracle:latest
-
-#### Push the commited image to JUXTA's repository:
-
-	docker tag juxta/oracle jxt-dev-pgsql.juxta.fr:5000/oracle
-	docker push jxt-dev-pgsql.juxta.fr:5000/oracle
-
 #### Running Oracle Database Enterprise and Standard Edition 2 in a Docker container
 To run your Oracle Database Docker image use the **docker run** command as follows:
 
@@ -111,31 +102,47 @@ Example, minimal container:
 
 	docker run -d -p 1158:1158 -p 1521:1521 juxta/oracle:latest
 
-With startup scripts:
+## Run the image
+
+**NOTE**: In order to access external data such as scripts, dumps, patches you can copy them to the docker host *OR* mount a network share/
+
+How to Mount network share as volume. Oracle user and group id are `uid=54321,gid=54321` :
+
+	sudo mount -t cifs -o username=${USER},domain=JUXTA,vers=2.0,uid=54321,gid=54321 //JUXTASTOCKAGE.juxta.fr/juxta/Developpement/OracleCI/startup/impdp /mnt/OracleCI
+
+Use [autofs](https://help.ubuntu.com/community/Autofs) tool to automatically mount a share, even if previoulsy disconnected or unmounted.
+
+### Run image with startup scripts:
 
 	docker run -d -p 1521:1521 -v ${PWD}\scripts\startup\test:/opt/oracle/scripts/startup juxta/oracle:latest
 
 	docker run -d -p 1521:1521 -v /mnt/OracleCI:/opt/oracle/scripts/startup juxta/oracle
 
-With volume:
+### Run image with a volume:
 
 	docker run -d -p 1521:1521 -v /opt/oracle/oradata juxta/oracle:latest
 
-Limit memory:
+### Run image and limit memory:
 
 	docker run -d -p 1521:1521 --memory="2g" -v /mnt/OracleCI:/opt/oracle/scripts/startup juxta/oracle
+
+#### Launch SQL*Plus within the image
 
 Once the container has been started and the database created you can connect to it just like to any other database (port 1521 must be exposed):
 
 	sqlplus sys/<your password>@//<server>:1521/<your SID> as sysdba
 	sqlplus sys/juxta@//jxt-dev-pgsql.juxta.fr/orcl as sysdba
 
+## Commit & push your image
 
-**NOTE**: Mount network share as volume. Oracle user and group id are `uid=54321,gid=54321` :
+Do your configuration tasks inside the container then commit. Example :
 
-	sudo mount -t cifs -o username=${USER},domain=JUXTA,vers=2.0,uid=54321,gid=54321 //JUXTASTOCKAGE.juxta.fr/juxta/Developpement/OracleCI/impdp /mnt/OracleCI
+	docker commit --author "Eric Clement <eric.clement@juxta.fr>" --message "Empty snapshot" 0f4acaaca803 juxta/oracle:latest
 
-Use [autofs](https://help.ubuntu.com/community/Autofs) tool to automatically mount a share, even if previoulsy disconnected or unmounted.
+Push the commited image to JUXTA's repository:
+
+	docker tag juxta/oracle jxt-dev-pgsql.juxta.fr:5000/oracle
+	docker push jxt-dev-pgsql.juxta.fr:5000/oracle
 
 ## Enterprise Manager (EM)
 
